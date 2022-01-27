@@ -7,109 +7,141 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  final Map<int, Offset> _gameState = {
+    1: const Offset(0.0, 0.0),
+    2: const Offset(1.0, 0.0),
+    3: const Offset(2.0, 0.0),
+    4: const Offset(0.0, 1.0),
+    5: const Offset(1.0, 1.0),
+    6: const Offset(2.0, 1.0),
+    7: const Offset(0.0, 2.0),
+    8: const Offset(1.0, 2.0),
+  };
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final List<Widget> children = [];
+
+    for (int i = 1; i < 9; i++) {
+      final Offset offset = _gameState[i]! * 100;
+      children.add(
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 500),
+          left: offset.dx,
+          top: offset.dy,
+          child: Piece(
+            index: i,
+            onSwipeLeft: () => _move(i, const Offset(-1, 0)),
+            onSwipeRight: () => _move(i, const Offset(1, 0)),
+            onSwipeUp: () => _move(i, const Offset(0, -1)),
+            onSwipeDown: () => _move(i, const Offset(0, 1)),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Slide Puzzle'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Stack(
+          children: children,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  _move(int index, Offset offset) {
+    final destination = _gameState[index]! + offset;
+
+    print('Trying to move $index to $destination');
+
+    for (final o in _gameState.values) {
+      if (o == destination) {
+        // setState(() {
+        //   _gameState[index] = _gameState[index]! + offset / 4;
+        //   Future.delayed(const Duration(milliseconds: 100), () {
+        //     setState(() {
+        //       _gameState[index] = _gameState[index]! - offset / 4;
+        //     });
+        //   });
+        // });
+        return;
+      }
+    }
+
+    if (destination.dx < 0 || destination.dx > 2) return;
+    if (destination.dy < 0 || destination.dy > 2) return;
+
+    setState(() => _gameState[index] = destination);
+  }
+}
+
+class Piece extends StatelessWidget {
+  final VoidCallback onSwipeLeft;
+  final VoidCallback onSwipeRight;
+  final VoidCallback onSwipeUp;
+  final VoidCallback onSwipeDown;
+
+  const Piece({
+    Key? key,
+    required this.index,
+    required this.onSwipeLeft,
+    required this.onSwipeRight,
+    required this.onSwipeUp,
+    required this.onSwipeDown,
+  }) : super(key: key);
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onHorizontalDragEnd: (_) {
+        final v = _.primaryVelocity;
+        if (v != null) {
+          v > 0 ? onSwipeRight() : onSwipeLeft();
+        }
+      },
+      onVerticalDragEnd: (_) {
+        final v = _.primaryVelocity;
+        if (v != null) {
+          v > 0 ? onSwipeDown() : onSwipeUp();
+        }
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        color: Colors.blue[index * 100],
+        child: Center(
+          child: Text(
+            '$index',
+            style: Theme.of(context).textTheme.headline4,
+          ),
+        ),
+      ),
     );
   }
 }
