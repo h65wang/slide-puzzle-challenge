@@ -19,6 +19,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+double gridSize = 80;
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
 
@@ -27,34 +29,35 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final Map<int, Offset> _gameState = {
-    1: const Offset(0.0, 0.0),
-    2: const Offset(1.0, 0.0),
-    3: const Offset(2.0, 0.0),
-    4: const Offset(0.0, 1.0),
-    5: const Offset(1.0, 1.0),
-    6: const Offset(2.0, 1.0),
-    7: const Offset(0.0, 2.0),
-    8: const Offset(1.0, 2.0),
-  };
+  final List<Piece> _pieces = [
+    Piece(label: '黄忠', width: 1, height: 2, x: 0, y: 0),
+    Piece(label: '曹操', width: 2, height: 2, x: 1, y: 0),
+    Piece(label: '张飞', width: 1, height: 2, x: 3, y: 0),
+    Piece(label: '马超', width: 1, height: 2, x: 0, y: 2),
+    Piece(label: '关羽', width: 2, height: 1, x: 1, y: 2),
+    Piece(label: '赵云', width: 1, height: 2, x: 3, y: 2),
+    Piece(label: '春', width: 1, height: 1, x: 1, y: 3),
+    Piece(label: '夏', width: 1, height: 1, x: 2, y: 3),
+    Piece(label: '秋', width: 1, height: 1, x: 0, y: 4),
+    Piece(label: '冬', width: 1, height: 1, x: 3, y: 4),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> children = [];
 
-    for (int i = 1; i < 9; i++) {
-      final Offset offset = _gameState[i]! * 100;
+    for (final p in _pieces) {
       children.add(
         AnimatedPositioned(
-          duration: const Duration(milliseconds: 500),
-          left: offset.dx,
-          top: offset.dy,
-          child: Piece(
-            index: i,
-            onSwipeLeft: () => _move(i, const Offset(-1, 0)),
-            onSwipeRight: () => _move(i, const Offset(1, 0)),
-            onSwipeUp: () => _move(i, const Offset(0, -1)),
-            onSwipeDown: () => _move(i, const Offset(0, 1)),
+          duration: const Duration(milliseconds: 200),
+          left: p.x * gridSize,
+          top: p.y * gridSize,
+          child: BoardPiece(
+            piece: p,
+            onSwipeLeft: () => _move(p, -1, 0),
+            onSwipeRight: () => _move(p, 1, 0),
+            onSwipeUp: () => _move(p, 0, -1),
+            onSwipeDown: () => _move(p, 0, 1),
           ),
         ),
       );
@@ -73,48 +76,95 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  _move(int index, Offset offset) {
-    final destination = _gameState[index]! + offset;
-
-    print('Trying to move $index to $destination');
-
-    for (final o in _gameState.values) {
-      if (o == destination) {
-        // setState(() {
-        //   _gameState[index] = _gameState[index]! + offset / 4;
-        //   Future.delayed(const Duration(milliseconds: 100), () {
-        //     setState(() {
-        //       _gameState[index] = _gameState[index]! - offset / 4;
-        //     });
-        //   });
-        // });
-        return;
+  _move(Piece piece, int dx, int dy) {
+    List<Position> occupied = [];
+    for (final p in _pieces) {
+      if (p.label == piece.label) {
+        continue; // self
       }
+      occupied.addAll(p.spots);
     }
 
-    if (destination.dx < 0 || destination.dx > 2) return;
-    if (destination.dy < 0 || destination.dy > 2) return;
+    final destSpots = Piece.occupying(
+      piece.x + dx,
+      piece.y + dy,
+      piece.width,
+      piece.height,
+    );
 
-    setState(() => _gameState[index] = destination);
+    print(
+        'Trying to move ${piece.label} with spots ${piece.spots.join()} to $destSpots');
+
+    final collision = destSpots.any(occupied.contains);
+
+    if (collision) {
+      print('collision');
+      return;
+    }
+
+    setState(() {
+      piece.x = piece.x + dx;
+      piece.y = piece.y + dy;
+    });
   }
 }
 
-class Piece extends StatelessWidget {
+class Position {
+  final int x;
+  final int y;
+
+  const Position(this.x, this.y);
+
+  @override
+  bool operator ==(Object? other) =>
+      identical(this, other) ||
+      other is Position &&
+          runtimeType == other.runtimeType &&
+          x == other.x &&
+          y == other.y;
+
+  @override
+  String toString() => 'Position($x, $y)';
+}
+
+class Piece {
+  final String label; // 曹
+  final int width, height;
+  int x, y;
+
+  Piece({
+    required this.label,
+    required this.width,
+    required this.height,
+    required this.x,
+    required this.y,
+  });
+
+  List<Position> get spots => occupying(x, y, width, height);
+
+  static List<Position> occupying(int x, int y, int width, int height) {
+    return [
+      for (int i = 0; i < width; i++)
+        for (int j = 0; j < height; j++) Position(x + i, y + j),
+    ];
+  }
+}
+
+class BoardPiece extends StatelessWidget {
+  final Piece piece;
   final VoidCallback onSwipeLeft;
   final VoidCallback onSwipeRight;
   final VoidCallback onSwipeUp;
   final VoidCallback onSwipeDown;
 
-  const Piece({
+  const BoardPiece({
     Key? key,
-    required this.index,
+    required this.piece,
     required this.onSwipeLeft,
     required this.onSwipeRight,
     required this.onSwipeUp,
     required this.onSwipeDown,
   }) : super(key: key);
-
-  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -132,14 +182,32 @@ class Piece extends StatelessWidget {
         }
       },
       child: Container(
-        width: 100,
-        height: 100,
-        color: Colors.blue[index * 100],
-        child: Center(
-          child: Text(
-            '$index',
-            style: Theme.of(context).textTheme.headline4,
+        width: piece.width * gridSize,
+        height: piece.height * gridSize,
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          border: Border.all(
+            color: Colors.white,
+            width: 1,
           ),
+        ),
+        child: Stack(
+          children: [
+            Center(
+              child: Text(
+                piece.label,
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            ),
+            Opacity(
+              opacity: 0.1,
+              child: Text(
+                '(${piece.x}, ${piece.y})\n'
+                'width=${piece.width}\nheight=${piece.height}',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            )
+          ],
         ),
       ),
     );
