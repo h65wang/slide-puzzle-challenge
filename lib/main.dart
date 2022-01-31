@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'game_state.dart';
+import 'game_board.dart';
 
 void main() {
   runApp(const MyApp());
 }
-
-double gridSize = 80;
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -14,24 +12,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Slide Puzzle',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final GameState _gameState = GameState.level1();
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,146 +30,26 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('Slide Puzzle'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Stack(
-          children: [
-            for (final p in _gameState.pieces)
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 200),
-                left: p.x * gridSize,
-                top: p.y * gridSize,
-                child: BoardPieceAttachment(
-                  piece: p,
-                ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.green[300]!,
+                  Colors.pink[100]!,
+                ],
               ),
-            for (final p in _gameState.pieces)
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 200),
-                left: p.x * gridSize,
-                top: p.y * gridSize,
-                child: BoardPiece(
-                  piece: p,
-                  onSwipeLeft: () => setState(() => _gameState.move(p, -1, 0)),
-                  onSwipeRight: () => setState(() => _gameState.move(p, 1, 0)),
-                  onSwipeUp: () => setState(() => _gameState.move(p, 0, -1)),
-                  onSwipeDown: () => setState(() => _gameState.move(p, 0, 1)),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class BoardPiece extends StatelessWidget {
-  final Piece piece;
-  final VoidCallback onSwipeLeft;
-  final VoidCallback onSwipeRight;
-  final VoidCallback onSwipeUp;
-  final VoidCallback onSwipeDown;
-
-  const BoardPiece({
-    Key? key,
-    required this.piece,
-    required this.onSwipeLeft,
-    required this.onSwipeRight,
-    required this.onSwipeUp,
-    required this.onSwipeDown,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: (_) {
-        final v = _.primaryVelocity;
-        if (v != null) {
-          v > 0 ? onSwipeRight() : onSwipeLeft();
-        }
-      },
-      onVerticalDragEnd: (_) {
-        final v = _.primaryVelocity;
-        if (v != null) {
-          v > 0 ? onSwipeDown() : onSwipeUp();
-        }
-      },
-      child: Container(
-        width: piece.width * gridSize,
-        height: piece.height * gridSize,
-        decoration: BoxDecoration(
-          color: piece.color.shade300,
-          border: Border.all(
-            color: piece.color.shade200,
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Center(
-          child: Text(
-            piece.label,
-            style: TextStyle(
-              fontSize: gridSize * 0.3,
-              color: piece.color.shade900,
-              shadows: [
-                Shadow(
-                  color: piece.color.shade100,
-                  blurRadius: 2,
-                  offset: const Offset(1, 1),
-                ),
-              ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class BoardPieceAttachment extends StatelessWidget {
-  final Piece piece;
-
-  const BoardPieceAttachment({
-    Key? key,
-    required this.piece,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final decoration = DecoratedBox(
-      decoration: BoxDecoration(
-        color: piece.color.shade300,
-        border: Border.all(color: piece.color.shade200, width: 1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-          top: gridSize * -0.1,
-          right: gridSize * 0.1,
-          child: SizedBox(
-            width: piece.width * gridSize * 0.8,
-            height: piece.height * gridSize * 0.2,
-            child: decoration,
+          const Align(
+            alignment: Alignment(0, -0.5),
+            child: GameBoard(),
           ),
-        ),
-        Positioned(
-          top: gridSize * 0.1,
-          right: gridSize * -0.1,
-          child: SizedBox(
-            width: piece.width * gridSize * 0.2,
-            height: piece.height * gridSize * 0.8,
-            child: decoration,
-          ),
-        ),
-        SizedBox(
-          width: piece.width * gridSize,
-          height: piece.height * gridSize,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

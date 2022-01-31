@@ -7,9 +7,9 @@ class GameState {
   GameState.level0()
       : boardSize = const Pair(4, 5),
         pieces = [
-          Piece(1, label: '黄忠', width: 1, height: 2, x: 0, y: 0),
+          Piece(1, label: '黄忠', width: 1, height: 4, x: 0, y: 0),
           Piece(2, label: '曹操', width: 2, height: 2, x: 2, y: 0),
-          Piece(5, label: '关羽', width: 2, height: 1, x: 1, y: 3),
+          Piece(5, label: '关羽', width: 3, height: 1, x: 1, y: 3),
           Piece(9, label: '秋', width: 1, height: 1, x: 0, y: 4),
           Piece(10, label: '冬', width: 1, height: 1, x: 3, y: 4),
         ];
@@ -37,9 +37,9 @@ class GameState {
 
     // Make sure it's within the bounds of the board.
     if (destX < 0 ||
-        destX >= boardSize.x ||
+        destX + (piece.width - 1) >= boardSize.x ||
         destY < 0 ||
-        destY >= boardSize.y) {
+        destY + (piece.height - 1) >= boardSize.y) {
       return;
     }
 
