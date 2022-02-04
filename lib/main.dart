@@ -28,21 +28,16 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.green.shade700,
         title: const Text('Slide Puzzle'),
       ),
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.green[300]!,
-                  Colors.pink[100]!,
-                ],
-              ),
-            ),
+          Image.network(
+            'https://cdn.wallpapersafari.com/84/1/Ufhvua.jpg',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           ),
           const Align(
             alignment: Alignment(0, -0.5),

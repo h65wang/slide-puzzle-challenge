@@ -7,7 +7,7 @@ class GameState {
   GameState.level0()
       : boardSize = const Pair(4, 5),
         pieces = [
-          Piece(1, label: '黄忠', width: 1, height: 4, x: 0, y: 0),
+          Piece(1, label: '黄\n忠', width: 1, height: 4, x: 0, y: 0),
           Piece(2, label: '曹操', width: 2, height: 2, x: 2, y: 0),
           Piece(5, label: '关羽', width: 3, height: 1, x: 1, y: 3),
           Piece(9, label: '秋', width: 1, height: 1, x: 0, y: 4),
@@ -17,12 +17,12 @@ class GameState {
   GameState.level1()
       : boardSize = const Pair(4, 5),
         pieces = [
-          Piece(1, label: '黄忠', width: 1, height: 2, x: 0, y: 0),
+          Piece(1, label: '黄\n忠', width: 1, height: 2, x: 0, y: 0),
           Piece(2, label: '曹操', width: 2, height: 2, x: 1, y: 0),
-          Piece(3, label: '张飞', width: 1, height: 2, x: 3, y: 0),
-          Piece(4, label: '马超', width: 1, height: 2, x: 0, y: 2),
+          Piece(3, label: '张\n飞', width: 1, height: 2, x: 3, y: 0),
+          Piece(4, label: '马\n超', width: 1, height: 2, x: 0, y: 2),
           Piece(5, label: '关羽', width: 2, height: 1, x: 1, y: 2),
-          Piece(6, label: '赵云', width: 1, height: 2, x: 3, y: 2),
+          Piece(6, label: '赵\n云', width: 1, height: 2, x: 3, y: 2),
           Piece(7, label: '春', width: 1, height: 1, x: 1, y: 3),
           Piece(8, label: '夏', width: 1, height: 1, x: 2, y: 3),
           Piece(9, label: '秋', width: 1, height: 1, x: 0, y: 4),

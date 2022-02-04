@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'game_state.dart';
@@ -11,42 +13,102 @@ class GameBoard extends StatefulWidget {
   State<GameBoard> createState() => _GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard> {
+class _GameBoardState extends State<GameBoard>
+    with SingleTickerProviderStateMixin {
   final GameState _gameState = GameState.level1();
+
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 1),
+  )..repeat(reverse: true);
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: gridSize * _gameState.boardSize.x,
-          height: gridSize * _gameState.boardSize.y,
-          color: Colors.grey.shade200.withOpacity(0.5),
-        ),
-        for (final p in _gameState.pieces)
-          _buildAnimatedPositioned(
-            piece: p,
-            child: BoardPieceShadow(piece: p),
-          ),
-        for (final p in _gameState.pieces)
-          _buildAnimatedPositioned(
-            piece: p,
-            child: BoardPieceAttachment(piece: p),
-          ),
-        for (final p in _gameState.pieces)
-          _buildAnimatedPositioned(
-            piece: p,
-            child: BoardPiece(
+    final game = SizedBox(
+      width: gridSize * _gameState.boardSize.x,
+      height: gridSize * _gameState.boardSize.y,
+      child: Stack(
+        children: [
+          for (final p in _gameState.pieces)
+            _buildAnimatedPositioned(
               piece: p,
-              onSwipeLeft: () => setState(() => _gameState.move(p, -1, 0)),
-              onSwipeRight: () => setState(() => _gameState.move(p, 1, 0)),
-              onSwipeUp: () => setState(() => _gameState.move(p, 0, -1)),
-              onSwipeDown: () => setState(() => _gameState.move(p, 0, 1)),
+              child: BoardPieceShadow(piece: p),
+            ),
+          for (final p in _gameState.pieces)
+            _buildAnimatedPositioned(
+              piece: p,
+              child: BoardPieceAttachment(piece: p),
+            ),
+          for (final p in _gameState.pieces)
+            _buildAnimatedPositioned(
+              piece: p,
+              child: BoardPiece(
+                piece: p,
+                onSwipeLeft: () => setState(() => _gameState.move(p, -1, 0)),
+                onSwipeRight: () => setState(() => _gameState.move(p, 1, 0)),
+                onSwipeUp: () => setState(() => _gameState.move(p, 0, -1)),
+                onSwipeDown: () => setState(() => _gameState.move(p, 0, 1)),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    return ClipRect(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: SizedBox(
+              width: gridSize * _gameState.boardSize.x,
+              height: gridSize * _gameState.boardSize.y,
             ),
           ),
-        ..._buildBorders(),
-      ],
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (BuildContext context, Widget? child) {
+              final v = CurveTween(curve: Curves.slowMiddle)
+                  .transform(_controller.value);
+              return ShaderMask(
+                shaderCallback: (Rect bounds) {
+                  return LinearGradient(
+                    begin: const Alignment(0.8, -0.5),
+                    end: const Alignment(-1, 0.5),
+                    colors: [
+                      Colors.transparent,
+                      ColorTween(
+                        begin: Color(0x5fffff00),
+                        end: Color(0x6fffff00),
+                      ).transform(v)!,
+                      ColorTween(
+                        begin: Color(0x76ffff00),
+                        end: Color(0x94ffff00),
+                      ).transform(v)!,
+                      ColorTween(
+                        begin: Color(0x4fffff00),
+                        end: Color(0x3fffff00),
+                      ).transform(v)!,
+                      Colors.transparent,
+                    ],
+                    stops: [
+                      0,
+                      0.4 + v * 0.02,
+                      0.5 + v * -0.02,
+                      0.6 + v * 0.02,
+                      1.0,
+                    ],
+                  ).createShader(bounds);
+                },
+                blendMode: BlendMode.hardLight,
+                child: child,
+              );
+            },
+            child: game,
+          ),
+          ..._buildBorders(),
+        ],
+      ),
     );
   }
 
@@ -62,7 +124,7 @@ class _GameBoardState extends State<GameBoard> {
 
   List<Widget> _buildBorders() {
     const child = ColoredBox(
-      color: Colors.black,
+      color: Color(0xfff2e7d3),
     );
     return [
       Positioned(
@@ -139,10 +201,17 @@ class BoardPiece extends StatelessWidget {
         width: gridSize * 0.99 + (piece.width - 1) * gridSize,
         height: gridSize * 0.99 + (piece.height - 1) * gridSize,
         decoration: BoxDecoration(
-          color: piece.color.shade300,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xff357070),
+              Color(0xff1f5754),
+            ],
+          ),
           border: Border.all(
-            color: piece.color.shade200,
-            width: 1,
+            color: const Color(0xff8ef8fe),
+            width: gridSize * 0.005,
           ),
           borderRadius: BorderRadius.circular(4),
         ),
@@ -150,16 +219,21 @@ class BoardPiece extends StatelessWidget {
           child: Text(
             piece.label,
             style: TextStyle(
-              fontSize: gridSize * 0.3,
-              color: piece.color.shade900,
-              shadows: [
-                Shadow(
-                  color: piece.color.shade100,
-                  blurRadius: 2,
-                  offset: const Offset(1, 1),
-                ),
-              ],
+              fontSize: gridSize * 0.4,
+              foreground: Paint()
+                ..shader = const LinearGradient(
+                  colors: [
+                    Colors.white,
+                    Colors.red,
+                  ],
+                ).createShader(
+                  Rect.fromLTWH(0, 0, gridSize * 5, gridSize * 5),
+                )
+                ..style = PaintingStyle.fill
+                ..strokeWidth = 5
+                ..color = Colors.white,
             ),
+            textAlign: TextAlign.center,
           ),
         ),
       ),
@@ -179,7 +253,7 @@ class BoardPieceAttachment extends StatelessWidget {
   Widget build(BuildContext context) {
     final decoration = DecoratedBox(
       decoration: BoxDecoration(
-        color: piece.color.shade300,
+        color: Color(0xff193e3d),
         borderRadius: BorderRadius.circular(gridSize * 0.04),
       ),
     );
@@ -228,7 +302,7 @@ class BoardPieceShadow extends StatelessWidget {
       width: piece.width * gridSize * 0.99,
       height: gridSize * 1.05 + (piece.height - 1) * gridSize,
       decoration: BoxDecoration(
-        color: piece.color.shade800,
+        color: const Color(0xff1e3e40),
         borderRadius: BorderRadius.circular(gridSize * 0.04),
       ),
     );
