@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:slide_puzzle/MatrixBackdrop.dart';
 
 import 'game_board.dart';
 
@@ -38,6 +39,9 @@ class HomePage extends StatelessWidget {
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
+          ),
+          RepaintBoundary(
+            child: const MatrixBackdrop(),
           ),
           const Align(
             alignment: Alignment(0, -0.5),

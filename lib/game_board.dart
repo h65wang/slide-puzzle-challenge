@@ -19,7 +19,7 @@ class _GameBoardState extends State<GameBoard>
 
   late final _controller = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 1),
+    duration: const Duration(milliseconds: 1400),
   )..repeat(reverse: true);
 
   @override
@@ -55,59 +55,68 @@ class _GameBoardState extends State<GameBoard>
     );
 
     return ClipRect(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: SizedBox(
-              width: gridSize * _gameState.boardSize.x,
-              height: gridSize * _gameState.boardSize.y,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color(0xffffff00),
+            width: 4,
+          ),
+        ),
+        // color: Colors.yellow,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: SizedBox(
+                width: gridSize * _gameState.boardSize.x,
+                height: gridSize * _gameState.boardSize.y,
+              ),
             ),
-          ),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (BuildContext context, Widget? child) {
-              final v = CurveTween(curve: Curves.slowMiddle)
-                  .transform(_controller.value);
-              return ShaderMask(
-                shaderCallback: (Rect bounds) {
-                  return LinearGradient(
-                    begin: const Alignment(0.8, -0.5),
-                    end: const Alignment(-1, 0.5),
-                    colors: [
-                      Colors.transparent,
-                      ColorTween(
-                        begin: Color(0x5fffff00),
-                        end: Color(0x6fffff00),
-                      ).transform(v)!,
-                      ColorTween(
-                        begin: Color(0x76ffff00),
-                        end: Color(0x94ffff00),
-                      ).transform(v)!,
-                      ColorTween(
-                        begin: Color(0x4fffff00),
-                        end: Color(0x3fffff00),
-                      ).transform(v)!,
-                      Colors.transparent,
-                    ],
-                    stops: [
-                      0,
-                      0.4 + v * 0.02,
-                      0.5 + v * -0.02,
-                      0.6 + v * 0.02,
-                      1.0,
-                    ],
-                  ).createShader(bounds);
-                },
-                blendMode: BlendMode.hardLight,
-                child: child,
-              );
-            },
-            child: game,
-          ),
-          ..._buildBorders(),
-        ],
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (BuildContext context, Widget? child) {
+                final v = CurveTween(curve: Curves.easeOutBack)
+                    .transform(_controller.value);
+                return ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment(0.8, -0.5 + v * 0.1),
+                      end: const Alignment(-1, 0.5),
+                      colors: [
+                        Colors.transparent,
+                        ColorTween(
+                          begin: const Color(0x5fffff00),
+                          end: const Color(0x6fffff00),
+                        ).transform(v)!,
+                        ColorTween(
+                          begin: const Color(0x86ffff00),
+                          end: const Color(0x94ffff00),
+                        ).transform(v)!,
+                        ColorTween(
+                          begin: const Color(0x4fffff00),
+                          end: const Color(0x3fffff00),
+                        ).transform(v)!,
+                        Colors.transparent,
+                      ],
+                      stops: [
+                        0,
+                        0.4 + v * 0.04,
+                        0.5 + v * -0.02,
+                        0.6 + v * 0.03,
+                        1.0,
+                      ],
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.hardLight,
+                  child: child,
+                );
+              },
+              child: game,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -120,49 +129,6 @@ class _GameBoardState extends State<GameBoard>
       top: piece.y * gridSize,
       child: child,
     );
-  }
-
-  List<Widget> _buildBorders() {
-    const child = ColoredBox(
-      color: Color(0xfff2e7d3),
-    );
-    return [
-      Positioned(
-        top: 0,
-        bottom: 0,
-        left: gridSize * -0.1,
-        width: gridSize * 0.1,
-        child: child,
-      ),
-      Positioned(
-        top: 0,
-        bottom: 0,
-        right: gridSize * -0.1,
-        width: gridSize * 0.1,
-        child: child,
-      ),
-      Positioned(
-        top: gridSize * -0.1,
-        height: gridSize * 0.1,
-        left: gridSize * -0.1,
-        right: gridSize * -0.1,
-        child: child,
-      ),
-      Positioned(
-        bottom: gridSize * -0.1,
-        height: gridSize * 0.1,
-        left: gridSize * -0.1,
-        width: gridSize * 1.1,
-        child: child,
-      ),
-      Positioned(
-        bottom: gridSize * -0.1,
-        height: gridSize * 0.1,
-        right: gridSize * -0.1,
-        width: gridSize * 1.1,
-        child: child,
-      ),
-    ];
   }
 }
 
@@ -253,7 +219,7 @@ class BoardPieceAttachment extends StatelessWidget {
   Widget build(BuildContext context) {
     final decoration = DecoratedBox(
       decoration: BoxDecoration(
-        color: Color(0xff193e3d),
+        color: const Color(0xff193e3d),
         borderRadius: BorderRadius.circular(gridSize * 0.04),
       ),
     );
