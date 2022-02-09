@@ -16,11 +16,13 @@ class _MatrixBackdropState extends State<MatrixBackdrop>
     duration: const Duration(seconds: 1),
   )..repeat();
 
+  late final _painter = MatrixBackdropPainter(_controller);
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size.infinite,
-      painter: MatrixBackdropPainter(_controller),
+      painter: _painter,
     );
   }
 }
@@ -30,7 +32,7 @@ class MatrixBackdropPainter extends CustomPainter {
 
   final List<Line> _lines = List.generate(
     20,
-    (index) => Line(index: index, message: '1234567890' * 3),
+    (index) => Line(index: index, message: '1234567890'),
   );
 
   @override
@@ -58,26 +60,29 @@ class Line {
   Line({required this.index, required String message})
       : rnd = Random(),
         letters = message.split('') {
+    letters.shuffle(rnd);
+    final length = rnd.nextInt(40) + 40;
+    while (letters.length < length) {
+      letters.add(letters[rnd.nextInt(letters.length)]);
+    }
     reset();
+    currentLetters = rnd.nextInt(letters.length);
   }
 
   int counter = 0;
   int ticksPerLetter = 30;
   int currentLetters = 0;
+  int visibleLetters = 0;
   double fontSizeFactor = 0.95; // 0.9~1.0
   double opacity = 0.75; // 0.5~1.0
-  int restingTicks = 50;
-  bool resting = false;
 
   reset() {
-    resting = false;
     counter = 0;
-    // ticksPerLetter = (rnd.nextDouble() * 50 + 50) ~/ 1; // slow
-    ticksPerLetter = (rnd.nextDouble() * 5 + 5) ~/ 1; // fast
+    ticksPerLetter = (rnd.nextDouble() * 8 + 2).toInt();
     currentLetters = 0;
+    visibleLetters = rnd.nextInt(20) + 10;
     fontSizeFactor = rnd.nextDouble() * 0.1 + 0.9; // 0.9 - 1.0
     opacity = rnd.nextDouble() * 0.5 + 0.5; // 0.5 - 1.0
-    restingTicks = rnd.nextInt(200);
   }
 
   tick() {
@@ -87,18 +92,12 @@ class Line {
         currentLetters++;
         counter = 0;
       } else {
-        resting = true;
-        restingTicks--;
-        if (restingTicks < 0) {
-          reset();
-        }
+        reset();
       }
     }
   }
 
   paint(Canvas canvas, Size size) {
-    if (resting) return;
-
     final w = size.width / 20;
 
     for (int i = 0; i < currentLetters; i++) {
@@ -122,9 +121,14 @@ class Line {
   }
 
   Color getColor(int curr, int total) {
-    if (curr == total - 1) return Colors.white.withOpacity(opacity);
-    return Colors.green.withOpacity(opacity);
-    // if (total < 7) return Color(0xff00ff00);
-    // return Color.lerp(Color(0x9000ff00), Color(0xff00ff00), curr / total)!;
+    final countFromEnd = total - curr;
+
+    if (countFromEnd == 1) return Colors.white;
+
+    return Color.lerp(
+      const Color(0x0000ff00),
+      const Color(0xff00ff00),
+      (visibleLetters - countFromEnd) / visibleLetters,
+    )!;
   }
 }

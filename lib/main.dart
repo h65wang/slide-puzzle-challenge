@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:slide_puzzle/MatrixBackdrop.dart';
+import 'package:slide_puzzle/ui/matrix_backdrop.dart';
 
-import 'game_board.dart';
+import 'ui/game_board.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,23 +28,13 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green.shade700,
-        title: const Text('Slide Puzzle'),
-      ),
       body: Stack(
-        children: [
-          Image.network(
-            'https://cdn.wallpapersafari.com/84/1/Ufhvua.jpg',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ),
+        children: const [
           RepaintBoundary(
-            child: const MatrixBackdrop(),
+            child: MatrixBackdrop(),
           ),
-          const Align(
-            alignment: Alignment(0, -0.5),
+          Align(
+            alignment: Alignment(0, 0),
             child: GameBoard(),
           ),
         ],
