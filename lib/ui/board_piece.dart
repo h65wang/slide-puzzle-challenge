@@ -47,10 +47,10 @@ class BoardPiece extends StatelessWidget {
               Color(0xff1f5754),
             ],
           ),
-          border: Border.all(
-            color: const Color(0xff8ef8fe),
-            width: gridSize * 0.005,
-          ),
+          // border: Border.all(
+          //   color: const Color(0xff8ef8fe),
+          //   width: gridSize * 0.005,
+          // ),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Center(child: ShinyText(label: piece.label)),

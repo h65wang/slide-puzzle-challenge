@@ -27,13 +27,17 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Stack(
-        children: const [
+        children: [
           RepaintBoundary(
-            child: MatrixBackdrop(),
+            child: MatrixBackdrop(
+              key: ValueKey(size),
+              size: size,
+            ),
           ),
-          Align(
+          const Align(
             alignment: Alignment(0, 0),
             child: GameBoard(),
           ),

@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class MatrixBackdrop extends StatefulWidget {
-  const MatrixBackdrop({Key? key}) : super(key: key);
+  final Size size;
+
+  const MatrixBackdrop({Key? key, required this.size}) : super(key: key);
 
   @override
   _MatrixBackdropState createState() => _MatrixBackdropState();
@@ -16,23 +18,39 @@ class _MatrixBackdropState extends State<MatrixBackdrop>
     duration: const Duration(seconds: 1),
   )..repeat();
 
-  late final _painter = MatrixBackdropPainter(_controller);
+  late final MatrixBackdropPainter _painter = MatrixBackdropPainter(
+    controller: _controller,
+    screenWidth: widget.size.width,
+    screenHeight: widget.size.height,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: Size.infinite,
+      size: widget.size,
       painter: _painter,
     );
   }
 }
 
 class MatrixBackdropPainter extends CustomPainter {
-  MatrixBackdropPainter(controller) : super(repaint: controller);
+  final double screenWidth, screenHeight;
 
-  final List<Line> _lines = List.generate(
-    20,
-    (index) => Line(index: index, message: '1234567890'),
+  MatrixBackdropPainter({
+    required controller,
+    required this.screenWidth,
+    required this.screenHeight,
+  }) : super(repaint: controller);
+
+  late final List<Line> _lines = List.generate(
+    (screenWidth / Line.dotSize).ceil(),
+    (index) => Line(index: index, screenHeight: screenHeight),
   );
 
   @override
@@ -53,82 +71,62 @@ class MatrixBackdropPainter extends CustomPainter {
 }
 
 class Line {
+  static const dotSize = 20.0;
+  final double screenHeight;
   final Random rnd;
-  final List<String> letters;
   final int index;
 
-  Line({required this.index, required String message})
-      : rnd = Random(),
-        letters = message.split('') {
-    letters.shuffle(rnd);
-    final length = rnd.nextInt(40) + 40;
-    while (letters.length < length) {
-      letters.add(letters[rnd.nextInt(letters.length)]);
-    }
+  late int totalDots;
+  late int maxVisibleDots;
+
+  late double currentVisibleDots, speed, sizeVariance;
+
+  Line({required this.index, required this.screenHeight}) : rnd = Random() {
     reset();
-    currentLetters = rnd.nextInt(letters.length);
+    currentVisibleDots = rndBetween(0, totalDots);
   }
 
-  int counter = 0;
-  int ticksPerLetter = 30;
-  int currentLetters = 0;
-  int visibleLetters = 0;
-  double fontSizeFactor = 0.95; // 0.9~1.0
-  double opacity = 0.75; // 0.5~1.0
-
   reset() {
-    counter = 0;
-    ticksPerLetter = (rnd.nextDouble() * 8 + 2).toInt();
-    currentLetters = 0;
-    visibleLetters = rnd.nextInt(20) + 10;
-    fontSizeFactor = rnd.nextDouble() * 0.1 + 0.9; // 0.9 - 1.0
-    opacity = rnd.nextDouble() * 0.5 + 0.5; // 0.5 - 1.0
+    final totalDotsMin = (screenHeight / dotSize).ceil();
+    totalDots = rndBetween(totalDotsMin, totalDotsMin * 2).toInt();
+    maxVisibleDots = rndBetween(10, 20).toInt();
+    currentVisibleDots = 0;
+    speed = rndBetween(0.05, 0.5);
+    sizeVariance = rndBetween(0.3, 0.5);
+  }
+
+  double rndBetween(num min, num max) {
+    return min + rnd.nextDouble() * (max - min);
   }
 
   tick() {
-    counter++;
-    if (counter > ticksPerLetter) {
-      if (currentLetters < letters.length) {
-        currentLetters++;
-        counter = 0;
-      } else {
-        reset();
-      }
+    if (currentVisibleDots < totalDots) {
+      currentVisibleDots += speed;
+    } else {
+      reset();
     }
   }
 
   paint(Canvas canvas, Size size) {
-    final w = size.width / 20;
-
-    for (int i = 0; i < currentLetters; i++) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: letters[i],
-          style: TextStyle(
-            color: getColor(i, currentLetters),
-            fontSize: w * fontSizeFactor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: 0);
-
-      tp.paint(
-        canvas,
-        Offset(index * w, i * w),
+    for (int i = 0; i < currentVisibleDots; i++) {
+      canvas.drawRect(
+        Offset(index * dotSize, i * dotSize) &
+            Size(
+              dotSize * sizeVariance,
+              dotSize * sizeVariance,
+            ),
+        Paint()..color = getColor(i),
       );
     }
   }
 
-  Color getColor(int curr, int total) {
-    final countFromEnd = total - curr;
-
-    if (countFromEnd == 1) return Colors.white;
-
+  Color getColor(int index) {
+    final int countFromEnd = (currentVisibleDots - index).floor();
+    if (countFromEnd == 0) return const Color(0xffffffff);
     return Color.lerp(
       const Color(0x0000ff00),
       const Color(0xff00ff00),
-      (visibleLetters - countFromEnd) / visibleLetters,
+      (maxVisibleDots - countFromEnd) / maxVisibleDots,
     )!;
   }
 }
