@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'board_config.dart';
 import 'shiny_text.dart';
 import '../game_state.dart';
-
-double gridSize = 80;
 
 class BoardPiece extends StatelessWidget {
   final Piece piece;
@@ -22,6 +21,8 @@ class BoardPiece extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gridSize = BoardConfig.of(context).gridSize;
+
     return GestureDetector(
       onHorizontalDragEnd: (_) {
         final v = _.primaryVelocity;
@@ -47,10 +48,6 @@ class BoardPiece extends StatelessWidget {
               Color(0xff1f5754),
             ],
           ),
-          // border: Border.all(
-          //   color: const Color(0xff8ef8fe),
-          //   width: gridSize * 0.005,
-          // ),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Center(child: ShinyText(label: piece.label)),
@@ -69,6 +66,8 @@ class BoardPieceAttachment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gridSize = BoardConfig.of(context).gridSize;
+
     final decoration = DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xff1b4d4a),
@@ -116,6 +115,8 @@ class BoardPieceShadow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gridSize = BoardConfig.of(context).gridSize;
+
     return Container(
       width: piece.width * gridSize * 0.99,
       height: gridSize * 1.05 + (piece.height - 1) * gridSize,

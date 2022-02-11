@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-double gridSize = 80;
+import 'board_config.dart';
 
 class ShinyText extends StatefulWidget {
   final String label;
@@ -20,6 +20,7 @@ class _ShinyTextState extends State<ShinyText>
 
   @override
   Widget build(BuildContext context) {
+    final gridSize = BoardConfig.of(context).gridSize;
     final size = MediaQuery.of(context).size;
     return AnimatedBuilder(
       animation: _controller,

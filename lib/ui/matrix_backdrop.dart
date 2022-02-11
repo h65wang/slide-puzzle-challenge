@@ -3,9 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class MatrixBackdrop extends StatefulWidget {
-  final Size size;
-
-  const MatrixBackdrop({Key? key, required this.size}) : super(key: key);
+  const MatrixBackdrop({Key? key}) : super(key: key);
 
   @override
   _MatrixBackdropState createState() => _MatrixBackdropState();
@@ -18,11 +16,8 @@ class _MatrixBackdropState extends State<MatrixBackdrop>
     duration: const Duration(seconds: 1),
   )..repeat();
 
-  late final MatrixBackdropPainter _painter = MatrixBackdropPainter(
-    controller: _controller,
-    screenWidth: widget.size.width,
-    screenHeight: widget.size.height,
-  );
+  late final MatrixBackdropPainter _painter =
+      MatrixBackdropPainter(controller: _controller);
 
   @override
   void dispose() {
@@ -33,25 +28,16 @@ class _MatrixBackdropState extends State<MatrixBackdrop>
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: widget.size,
+      size: Size.infinite,
       painter: _painter,
     );
   }
 }
 
 class MatrixBackdropPainter extends CustomPainter {
-  final double screenWidth, screenHeight;
+  MatrixBackdropPainter({required controller}) : super(repaint: controller);
 
-  MatrixBackdropPainter({
-    required controller,
-    required this.screenWidth,
-    required this.screenHeight,
-  }) : super(repaint: controller);
-
-  late final List<Line> _lines = List.generate(
-    (screenWidth / Line.dotSize).ceil(),
-    (index) => Line(index: index, screenHeight: screenHeight),
-  );
+  late final List<Snake> _lines = List.generate(200, Snake.new);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -61,7 +47,7 @@ class MatrixBackdropPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, paint);
 
     for (final line in _lines) {
-      line.tick();
+      line.tick(size.height);
       line.paint(canvas, size);
     }
   }
@@ -70,47 +56,45 @@ class MatrixBackdropPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class Line {
+class Snake {
   static const dotSize = 20.0;
-  final double screenHeight;
   final Random rnd;
-  final int index;
+  final int index; // the column index of this snake on screen
 
-  late int totalDots;
-  late int maxVisibleDots;
+  late int length; // the total length of the snake
+  late double sizeVariance; // the size factor of each snake dot
+  late double speed;
+  late double y;
+  late bool colorful;
 
-  late double currentVisibleDots, speed, sizeVariance;
-
-  Line({required this.index, required this.screenHeight}) : rnd = Random() {
+  Snake(this.index) : rnd = Random() {
     reset();
-    currentVisibleDots = rndBetween(0, totalDots);
+    colorful = true;
+    speed = rndBetween(1.0, 2.0);
+    length = rndBetween(20, 80).toInt();
   }
 
   reset() {
-    final totalDotsMin = (screenHeight / dotSize).ceil();
-    totalDots = rndBetween(totalDotsMin, totalDotsMin * 2).toInt();
-    maxVisibleDots = rndBetween(10, 20).toInt();
-    currentVisibleDots = 0;
-    speed = rndBetween(0.05, 0.5);
+    length = rndBetween(10, 20).toInt();
     sizeVariance = rndBetween(0.3, 0.5);
+    speed = rndBetween(0.05, 0.5);
+    y = 0;
+    colorful = false;
   }
 
-  double rndBetween(num min, num max) {
-    return min + rnd.nextDouble() * (max - min);
-  }
-
-  tick() {
-    if (currentVisibleDots < totalDots) {
-      currentVisibleDots += speed;
+  tick(double screenHeight) {
+    if ((y - (length * 2)) * dotSize < screenHeight) {
+      y += speed;
     } else {
       reset();
     }
   }
 
   paint(Canvas canvas, Size size) {
-    for (int i = 0; i < currentVisibleDots; i++) {
+    if (index * dotSize > size.width) return;
+    for (int i = 0; i < length; i++) {
       canvas.drawRect(
-        Offset(index * dotSize, i * dotSize) &
+        Offset(index * dotSize, (y - i).floor() * dotSize) &
             Size(
               dotSize * sizeVariance,
               dotSize * sizeVariance,
@@ -120,13 +104,18 @@ class Line {
     }
   }
 
-  Color getColor(int index) {
-    final int countFromEnd = (currentVisibleDots - index).floor();
-    if (countFromEnd == 0) return const Color(0xffffffff);
+  Color getColor(int i) {
+    if (colorful) return Colors.primaries[i % 18];
+
+    if (i == 0) return Colors.white;
     return Color.lerp(
-      const Color(0x0000ff00),
       const Color(0xff00ff00),
-      (maxVisibleDots - countFromEnd) / maxVisibleDots,
+      const Color(0x0000ff00),
+      i / length,
     )!;
+  }
+
+  double rndBetween(num min, num max) {
+    return min + rnd.nextDouble() * (max - min);
   }
 }

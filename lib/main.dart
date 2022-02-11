@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:slide_puzzle/ui/matrix_backdrop.dart';
 
+import 'ui/board_config.dart';
 import 'ui/game_board.dart';
 
 void main() {
@@ -27,21 +28,23 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final shortEdge = MediaQuery.of(context).size.shortestSide;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            child: MatrixBackdrop(
-              key: ValueKey(size),
-              size: size,
+      body: BoardConfig(
+        edgePadding: 2,
+        gridSize: shortEdge / 6,
+        child: Stack(
+          children: const [
+            RepaintBoundary(
+              child: MatrixBackdrop(),
             ),
-          ),
-          const Align(
-            alignment: Alignment(0, 0),
-            child: GameBoard(),
-          ),
-        ],
+            Align(
+              alignment: Alignment(0, 0),
+              child: GameBoard(),
+            ),
+          ],
+        ),
       ),
     );
   }
