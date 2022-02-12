@@ -19,6 +19,12 @@ class _ShinyTextState extends State<ShinyText>
   )..repeat();
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final gridSize = BoardConfig.of(context).gridSize;
     final size = MediaQuery.of(context).size;

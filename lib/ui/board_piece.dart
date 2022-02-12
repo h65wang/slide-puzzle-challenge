@@ -5,18 +5,18 @@ import '../game_state.dart';
 
 class BoardPiece extends StatelessWidget {
   final Piece piece;
-  final VoidCallback onSwipeLeft;
-  final VoidCallback onSwipeRight;
-  final VoidCallback onSwipeUp;
-  final VoidCallback onSwipeDown;
+  final VoidCallback? onSwipeLeft;
+  final VoidCallback? onSwipeRight;
+  final VoidCallback? onSwipeUp;
+  final VoidCallback? onSwipeDown;
 
   const BoardPiece({
     Key? key,
     required this.piece,
-    required this.onSwipeLeft,
-    required this.onSwipeRight,
-    required this.onSwipeUp,
-    required this.onSwipeDown,
+    this.onSwipeLeft,
+    this.onSwipeRight,
+    this.onSwipeUp,
+    this.onSwipeDown,
   }) : super(key: key);
 
   @override
@@ -27,26 +27,31 @@ class BoardPiece extends StatelessWidget {
       onHorizontalDragEnd: (_) {
         final v = _.primaryVelocity;
         if (v != null) {
-          v > 0 ? onSwipeRight() : onSwipeLeft();
+          v > 0 ? onSwipeRight?.call() : onSwipeLeft?.call();
         }
       },
       onVerticalDragEnd: (_) {
         final v = _.primaryVelocity;
         if (v != null) {
-          v > 0 ? onSwipeDown() : onSwipeUp();
+          v > 0 ? onSwipeDown?.call() : onSwipeUp?.call();
         }
       },
       child: Container(
         width: gridSize * 0.99 + (piece.width - 1) * gridSize,
         height: gridSize * 0.99 + (piece.height - 1) * gridSize,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xff357070),
-              Color(0xff1f5754),
-            ],
+            colors: piece.id == 0
+                ? [
+                    Color(0xff359090),
+                    Color(0xff1f7774),
+                  ]
+                : [
+                    Color(0xff357070),
+                    Color(0xff1f5754),
+                  ],
           ),
           borderRadius: BorderRadius.circular(4),
         ),

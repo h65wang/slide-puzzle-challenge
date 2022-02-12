@@ -8,7 +8,12 @@ import 'board_config.dart';
 import 'board_piece.dart';
 
 class GameBoard extends StatefulWidget {
-  const GameBoard({Key? key}) : super(key: key);
+  static const animationSpeed = Duration(milliseconds: 500);
+  final GameState gameState;
+  final VoidCallback onWin;
+
+  const GameBoard({Key? key, required this.gameState, required this.onWin})
+      : super(key: key);
 
   @override
   State<GameBoard> createState() => _GameBoardState();
@@ -16,12 +21,17 @@ class GameBoard extends StatefulWidget {
 
 class _GameBoardState extends State<GameBoard>
     with SingleTickerProviderStateMixin {
-  final GameState _gameState = GameState.level1();
-
+  late final GameState _gameState = widget.gameState;
   late final _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
   )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +41,13 @@ class _GameBoardState extends State<GameBoard>
     final game = SizedBox(
       width: gridSize * _gameState.boardSize.x + edgePadding * 2,
       height: gridSize * _gameState.boardSize.y + edgePadding * 2,
-      child: ClipRect(
+      child: ClipPath(
+        clipper: TallRectClipper(),
         // help to enforce clipping when app window (web browser) is resized
         child: Padding(
           padding: EdgeInsets.all(edgePadding),
           child: Stack(
-            clipBehavior: Clip.none, // already clipped using `ClipRect`
+            clipBehavior: Clip.none, // already clipped using `ClipPath`
             children: [
               for (final p in _gameState.pieces)
                 _buildAnimatedPositioned(
@@ -53,14 +64,28 @@ class _GameBoardState extends State<GameBoard>
                   piece: p,
                   child: BoardPiece(
                     piece: p,
-                    onSwipeLeft: () =>
-                        setState(() => _gameState.move(p, -1, 0)),
-                    onSwipeRight: () =>
-                        setState(() => _gameState.move(p, 1, 0)),
-                    onSwipeUp: () => setState(() => _gameState.move(p, 0, -1)),
-                    onSwipeDown: () => setState(() => _gameState.move(p, 0, 1)),
+                    onSwipeLeft: () => setState(() => _move(p, -1, 0)),
+                    onSwipeRight: () => setState(() => _move(p, 1, 0)),
+                    onSwipeUp: () => setState(() => _move(p, 0, -1)),
+                    onSwipeDown: () => setState(() => _move(p, 0, 1)),
                   ),
                 ),
+              Positioned(
+                left: gridSize,
+                right: gridSize,
+                top: gridSize * 5,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    for (int i = 0; i < 3; i++)
+                      Icon(
+                        Icons.arrow_drop_down,
+                        size: 18,
+                        color: Color(0xff43adad),
+                      )
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -76,8 +101,8 @@ class _GameBoardState extends State<GameBoard>
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: const Color(0xff2d6665),
-                width: 8,
+                color: const Color(0x5f2d6665),
+                width: 16,
               ),
             ),
             child: game,
@@ -91,11 +116,38 @@ class _GameBoardState extends State<GameBoard>
     final gridSize = BoardConfig.of(context).gridSize;
 
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 500),
+      duration: GameBoard.animationSpeed,
       curve: Curves.easeOut,
       left: piece.x * gridSize,
       top: piece.y * gridSize,
       child: child,
     );
   }
+
+  _move(Piece piece, int dx, int dy) {
+    _gameState.move(piece, dx, dy);
+    final won = _gameState.checkWinCondition();
+    if (won) {
+      final core = _gameState.pieces.singleWhere((p) => p.id == 0);
+      // core.y += 2;
+      widget.onWin();
+    }
+  }
+}
+
+/// This is to clip pieces (and their attachments and shadows) to be within
+/// the game board, except the bottom (so the core piece can escape).
+class TallRectClipper extends CustomClipper<Path> {
+  @override
+  getClip(Size size) {
+    return Path()
+      ..moveTo(0.0, 0.0)
+      ..lineTo(0.0, size.height * 2)
+      ..lineTo(size.width, size.height * 2)
+      ..lineTo(size.width, 0.0)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(CustomClipper oldClipper) => false;
 }
