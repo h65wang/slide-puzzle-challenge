@@ -26,7 +26,7 @@ class _ShinyTextState extends State<ShinyText>
 
   @override
   Widget build(BuildContext context) {
-    final gridSize = BoardConfig.of(context).gridSize;
+    final fontSize = BoardConfig.of(context).unitSize * 0.4;
     final size = MediaQuery.of(context).size;
     return AnimatedBuilder(
       animation: _controller,
@@ -35,7 +35,7 @@ class _ShinyTextState extends State<ShinyText>
         return Text(
           widget.label,
           style: TextStyle(
-            fontSize: gridSize * 0.4,
+            fontSize: fontSize,
             foreground: Paint()
               ..shader = LinearGradient(
                 colors: const [

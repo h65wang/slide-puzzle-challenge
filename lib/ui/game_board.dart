@@ -1,14 +1,11 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../game_state.dart';
-import 'beam_transition.dart';
+import 'board_decoration.dart';
 import 'board_config.dart';
 import 'board_piece.dart';
 
 class GameBoard extends StatefulWidget {
-  static const animationSpeed = Duration(milliseconds: 500);
   final GameState gameState;
   final VoidCallback onWin;
 
@@ -22,132 +19,100 @@ class GameBoard extends StatefulWidget {
 class _GameBoardState extends State<GameBoard>
     with SingleTickerProviderStateMixin {
   late final GameState _gameState = widget.gameState;
-  late final _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  )..repeat(reverse: true);
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final GlobalKey _globalKey = GlobalKey();
+  bool hasWon = false;
+
+  Duration _slidingSpeed = Duration.zero;
 
   @override
   Widget build(BuildContext context) {
-    final gridSize = BoardConfig.of(context).gridSize;
-    final edgePadding = BoardConfig.of(context).edgePadding;
+    final unitSize = BoardConfig.of(context).unitSize;
 
-    final game = SizedBox(
-      width: gridSize * _gameState.boardSize.x + edgePadding * 2,
-      height: gridSize * _gameState.boardSize.y + edgePadding * 2,
-      child: ClipPath(
-        clipper: TallRectClipper(),
-        // help to enforce clipping when app window (web browser) is resized
-        child: Padding(
-          padding: EdgeInsets.all(edgePadding),
-          child: Stack(
-            clipBehavior: Clip.none, // already clipped using `ClipPath`
-            children: [
-              for (final p in _gameState.pieces)
-                _buildAnimatedPositioned(
-                  piece: p,
-                  child: BoardPieceShadow(piece: p),
-                ),
-              for (final p in _gameState.pieces)
-                _buildAnimatedPositioned(
-                  piece: p,
-                  child: BoardPieceAttachment(piece: p),
-                ),
-              for (final p in _gameState.pieces)
-                _buildAnimatedPositioned(
-                  piece: p,
-                  child: BoardPiece(
-                    piece: p,
-                    onSwipeLeft: () => setState(() => _move(p, -1, 0)),
-                    onSwipeRight: () => setState(() => _move(p, 1, 0)),
-                    onSwipeUp: () => setState(() => _move(p, 0, -1)),
-                    onSwipeDown: () => setState(() => _move(p, 0, 1)),
-                  ),
-                ),
-              Positioned(
-                left: gridSize,
-                right: gridSize,
-                top: gridSize * 5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (int i = 0; i < 3; i++)
-                      Icon(
-                        Icons.arrow_drop_down,
-                        size: 18,
-                        color: Color(0xff43adad),
-                      )
-                  ],
-                ),
-              ),
-            ],
-          ),
+    // Every game piece inside the game board.
+    final boardPieces = Stack(
+      // Use a `GlobalKey` to keep widget state during level-ending animation
+      key: _globalKey,
+      // Do not clip, because pieces need to fly out when level ends
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(
+          width: unitSize * _gameState.boardSize.x,
+          height: unitSize * _gameState.boardSize.y,
         ),
-      ),
-    );
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-        child: BeamTransition(
-          animation: _controller,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: const Color(0x5f2d6665),
-                width: 16,
-              ),
+        for (final p in _gameState.pieces)
+          _buildAnimatedPositioned(
+            left: p.x * unitSize,
+            top: p.y * unitSize,
+            child: BoardPieceShadow(piece: p),
+          ),
+        for (final p in _gameState.pieces)
+          _buildAnimatedPositioned(
+            left: p.x * unitSize,
+            top: p.y * unitSize,
+            child: BoardPieceAttachment(piece: p),
+          ),
+        for (final p in _gameState.pieces)
+          _buildAnimatedPositioned(
+            left: p.x * unitSize,
+            top: p.y * unitSize,
+            child: BoardPiece(
+              piece: p,
+              onSwipeLeft: () => _move(p, -1, 0),
+              onSwipeRight: () => _move(p, 1, 0),
+              onSwipeUp: () => _move(p, 0, -1),
+              onSwipeDown: () => _move(p, 0, 1),
             ),
-            child: game,
           ),
-        ),
-      ),
+      ],
     );
-  }
 
-  Widget _buildAnimatedPositioned({required Piece piece, required child}) {
-    final gridSize = BoardConfig.of(context).gridSize;
-
-    return AnimatedPositioned(
-      duration: GameBoard.animationSpeed,
-      curve: Curves.easeOut,
-      left: piece.x * gridSize,
-      top: piece.y * gridSize,
-      child: child,
-    );
-  }
-
-  _move(Piece piece, int dx, int dy) {
-    _gameState.move(piece, dx, dy);
-    final won = _gameState.checkWinCondition();
-    if (won) {
-      final core = _gameState.pieces.singleWhere((p) => p.id == 0);
-      // core.y += 2;
-      widget.onWin();
+    if (hasWon) {
+      return boardPieces;
+    } else {
+      return BoardDecoration(child: boardPieces);
     }
   }
-}
 
-/// This is to clip pieces (and their attachments and shadows) to be within
-/// the game board, except the bottom (so the core piece can escape).
-class TallRectClipper extends CustomClipper<Path> {
-  @override
-  getClip(Size size) {
-    return Path()
-      ..moveTo(0.0, 0.0)
-      ..lineTo(0.0, size.height * 2)
-      ..lineTo(size.width, size.height * 2)
-      ..lineTo(size.width, 0.0)
-      ..close();
+  Widget _buildAnimatedPositioned({
+    required double left,
+    required double top,
+    required child,
+  }) =>
+      AnimatedPositioned(
+        duration: _slidingSpeed,
+        curve: Curves.easeOut,
+        left: left,
+        top: top,
+        child: child,
+      );
+
+  _move(Piece piece, int dx, int dy) async {
+    if (!_gameState.canMove(piece, dx, dy)) return;
+
+    final duration = BoardConfig.of(context).slideDuration;
+
+    _slidingSpeed = duration; // set a moving speed
+    setState(() {
+      // let the piece move
+      piece.x += dx;
+      piece.y += dy;
+    });
+    await Future.delayed(duration); // wait for sliding animation to complete
+
+    if (_gameState.hasWon()) {
+      // Level ending animation: set every other pieces (except the core piece)
+      // backwards, and set the core piece slightly backwards too.
+      _gameState.pieces.where((p) => p.id != 0).forEach((p) => p.y -= 18);
+      _gameState.pieces.singleWhere((p) => p.id == 0).y -= 2;
+      // Notify the user that he has won.
+      widget.onWin();
+      setState(() => hasWon = true);
+      await Future.delayed(duration); // wait for level-ending animation
+    }
+    // Reset the `Duration` of `AnimatedPositioned` when no pieces are moving.
+    // This is to avoid implicit animations from triggering when users resize
+    // the app window.
+    _slidingSpeed = Duration.zero;
   }
-
-  @override
-  bool shouldReclip(CustomClipper oldClipper) => false;
 }

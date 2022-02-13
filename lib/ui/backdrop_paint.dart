@@ -2,21 +2,21 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class MatrixBackdrop extends StatefulWidget {
-  const MatrixBackdrop({Key? key}) : super(key: key);
+class BackdropPaint extends StatefulWidget {
+  const BackdropPaint({Key? key}) : super(key: key);
 
   @override
-  _MatrixBackdropState createState() => _MatrixBackdropState();
+  _BackdropPaintState createState() => _BackdropPaintState();
 }
 
-class _MatrixBackdropState extends State<MatrixBackdrop>
+class _BackdropPaintState extends State<BackdropPaint>
     with SingleTickerProviderStateMixin {
   late final _controller = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 1),
   )..repeat();
 
-  late final _painter = SnakeBackdropPainter(controller: _controller);
+  late final _painter = FallingDotsPainter(controller: _controller);
 
   @override
   void dispose() {
@@ -33,8 +33,8 @@ class _MatrixBackdropState extends State<MatrixBackdrop>
   }
 }
 
-class SnakeBackdropPainter extends CustomPainter {
-  SnakeBackdropPainter({required controller}) : super(repaint: controller);
+class FallingDotsPainter extends CustomPainter {
+  FallingDotsPainter({required controller}) : super(repaint: controller);
 
   late final List<Snake> _lines = List.generate(200, Snake.new);
 
@@ -119,8 +119,8 @@ class Snake {
   }
 }
 
-class MatrixBackdropPainter extends CustomPainter {
-  MatrixBackdropPainter({required controller}) : super(repaint: controller);
+class FallingTextPainter extends CustomPainter {
+  FallingTextPainter({required controller}) : super(repaint: controller);
 
   final List<Line> _lines = List.generate(200, Line.new);
 

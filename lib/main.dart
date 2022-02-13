@@ -1,7 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:slide_puzzle/ui/matrix_backdrop.dart';
 
 import 'game_state.dart';
+import 'ui/backdrop_paint.dart';
 import 'ui/board_config.dart';
 import 'ui/game_board.dart';
 
@@ -14,12 +16,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Slide Puzzle',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomePage(),
+      home: HomePage(),
     );
   }
 }
@@ -33,47 +32,41 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+  // Controls the level-transition animation.
   late final _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 500),
+    duration: const Duration(milliseconds: 300),
   )..forward(from: 0.0);
 
-  final _levels = [
-    GameState.level1(),
-    GameState.level2(),
-    GameState.level3(),
-  ];
-
-  int _levelIndex = 0;
+  int _currentLevel = 0;
 
   @override
   Widget build(BuildContext context) {
-    final shortEdge = MediaQuery.of(context).size.shortestSide;
+    final screenSize = MediaQuery.of(context).size;
+    final unitSize = min(screenSize.width / 6, screenSize.height / 8);
 
     return Scaffold(
       body: BoardConfig(
-        edgePadding: 2,
-        gridSize: shortEdge / 6,
+        unitSize: unitSize,
         child: Stack(
-          key: ValueKey(_levelIndex),
+          key: ValueKey(_currentLevel),
           children: [
             const RepaintBoundary(
-              child: MatrixBackdrop(),
+              child: BackdropPaint(),
             ),
             ScaleTransition(
               scale: _controller,
               child: SizeTransition(
-                // turns: Tween(begin: 0.0, end: 2.0).animate(_controller),
                 sizeFactor: _controller,
                 child: Center(
                   child: GameBoard(
-                    gameState: _levels[_levelIndex % _levels.length],
+                    gameState: GameState.level(_currentLevel),
                     onWin: () async {
-                      await Future.delayed(const Duration(milliseconds: 500));
+                      await Future.delayed(const Duration(milliseconds: 1000));
                       _controller.reverse();
-                      await Future.delayed(const Duration(milliseconds: 500));
+                      await Future.delayed(const Duration(milliseconds: 300));
                       setState(() {
-                        _levelIndex++;
+                        _currentLevel++;
                       });
                       _controller.forward();
                     },

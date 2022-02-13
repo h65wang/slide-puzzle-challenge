@@ -21,7 +21,7 @@ class BoardPiece extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gridSize = BoardConfig.of(context).gridSize;
+    final unitSize = BoardConfig.of(context).unitSize;
 
     return GestureDetector(
       onHorizontalDragEnd: (_) {
@@ -37,23 +37,23 @@ class BoardPiece extends StatelessWidget {
         }
       },
       child: Container(
-        width: gridSize * 0.99 + (piece.width - 1) * gridSize,
-        height: gridSize * 0.99 + (piece.height - 1) * gridSize,
+        width: unitSize * 0.99 + (piece.width - 1) * unitSize,
+        height: unitSize * 0.99 + (piece.height - 1) * unitSize,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: piece.id == 0
                 ? [
-                    Color(0xff359090),
-                    Color(0xff1f7774),
+                    BoardConfig.of(context).corePieceColor1,
+                    BoardConfig.of(context).corePieceColor2,
                   ]
                 : [
-                    Color(0xff357070),
-                    Color(0xff1f5754),
+                    BoardConfig.of(context).pieceColor1,
+                    BoardConfig.of(context).pieceColor2,
                   ],
           ),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(unitSize * 0.04),
         ),
         child: Center(child: ShinyText(label: piece.label)),
       ),
@@ -71,12 +71,12 @@ class BoardPieceAttachment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gridSize = BoardConfig.of(context).gridSize;
+    final unitSize = BoardConfig.of(context).unitSize;
 
     final decoration = DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xff1b4d4a),
-        borderRadius: BorderRadius.circular(gridSize * 0.04),
+        color: BoardConfig.of(context).pieceAttachmentColor,
+        borderRadius: BorderRadius.circular(unitSize * 0.04),
       ),
     );
 
@@ -84,26 +84,26 @@ class BoardPieceAttachment extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Positioned(
-          top: gridSize * -0.1,
-          right: gridSize * 0.1,
+          top: unitSize * -0.1,
+          right: unitSize * 0.1,
           child: SizedBox(
-            width: piece.width * gridSize * 0.8,
-            height: piece.height * gridSize * 0.2,
+            width: piece.width * unitSize * 0.8,
+            height: piece.height * unitSize * 0.2,
             child: decoration,
           ),
         ),
         Positioned(
-          top: gridSize * 0.1,
-          right: gridSize * -0.1,
+          top: unitSize * 0.1,
+          right: unitSize * -0.1,
           child: SizedBox(
-            width: piece.width * gridSize * 0.2,
-            height: piece.height * gridSize * 0.8,
+            width: piece.width * unitSize * 0.2,
+            height: piece.height * unitSize * 0.8,
             child: decoration,
           ),
         ),
         SizedBox(
-          width: piece.width * gridSize * 0.99,
-          height: piece.height * gridSize * 0.99,
+          width: piece.width * unitSize * 0.99,
+          height: piece.height * unitSize * 0.99,
         ),
       ],
     );
@@ -120,14 +120,13 @@ class BoardPieceShadow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gridSize = BoardConfig.of(context).gridSize;
-
+    final unitSize = BoardConfig.of(context).unitSize;
     return Container(
-      width: piece.width * gridSize * 0.99,
-      height: gridSize * 1.05 + (piece.height - 1) * gridSize,
+      width: piece.width * unitSize * 0.99,
+      height: unitSize * 1.05 + (piece.height - 1) * unitSize,
       decoration: BoxDecoration(
-        color: const Color(0xff1e3e40),
-        borderRadius: BorderRadius.circular(gridSize * 0.04),
+        color: BoardConfig.of(context).pieceShadowColor,
+        borderRadius: BorderRadius.circular(unitSize * 0.04),
       ),
     );
   }

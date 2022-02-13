@@ -1,63 +1,29 @@
+import 'level_data.dart';
+
 class GameState {
-  final List<Piece> pieces;
   final Pair boardSize;
+  late final List<Piece> pieces;
 
-  GameState.level0() // test level - cannot win
-      : boardSize = const Pair(4, 5),
-        pieces = [
-          Piece(0, label: '曹操', width: 2, height: 2, x: 2, y: 0),
-          Piece(1, label: '黄\n忠', width: 1, height: 4, x: 0, y: 0),
-          Piece(5, label: '关羽', width: 3, height: 1, x: 1, y: 3),
-          Piece(9, label: '秋', width: 1, height: 1, x: 0, y: 4),
-          Piece(10, label: '冬', width: 1, height: 1, x: 3, y: 4),
-        ];
+  GameState.level(int level) : boardSize = const Pair(4, 5) {
+    switch (level % 3) {
+      case 0:
+        print('Entering level 1');
+        pieces = LevelData.level1();
+        break;
+      case 1:
+        print('Entering level 2');
+        pieces = LevelData.level2();
+        break;
+      case 2:
+        print('Entering level 3');
+        pieces = LevelData.level3();
+        break;
+      default:
+        throw 'Invalid level selection: $level';
+    }
+  }
 
-  GameState.level1()
-      : boardSize = const Pair(4, 5),
-        pieces = [
-          Piece(0, label: '曹操', width: 2, height: 2, x: 1, y: 2),
-          Piece(1, label: '黄\n忠', width: 1, height: 2, x: 0, y: 0),
-          Piece(2, label: '张\n飞', width: 1, height: 2, x: 3, y: 0),
-          Piece(3, label: '马\n超', width: 1, height: 2, x: 0, y: 2),
-          Piece(4, label: '关羽', width: 2, height: 1, x: 1, y: 1),
-          Piece(5, label: '赵\n云', width: 1, height: 2, x: 3, y: 2),
-          Piece(6, label: '春', width: 1, height: 1, x: 1, y: 0),
-          Piece(7, label: '夏', width: 1, height: 1, x: 2, y: 0),
-          Piece(8, label: '秋', width: 1, height: 1, x: 0, y: 4),
-          Piece(9, label: '冬', width: 1, height: 1, x: 1, y: 4),
-        ];
-
-  GameState.level2()
-      : boardSize = const Pair(4, 5),
-        pieces = [
-          Piece(0, label: '曹操', width: 2, height: 2, x: 1, y: 1),
-          Piece(1, label: '黄\n忠', width: 1, height: 2, x: 0, y: 0),
-          Piece(2, label: '张\n飞', width: 1, height: 2, x: 3, y: 0),
-          Piece(3, label: '马\n超', width: 1, height: 2, x: 0, y: 2),
-          Piece(4, label: '关羽', width: 2, height: 1, x: 1, y: 4),
-          Piece(5, label: '赵\n云', width: 1, height: 2, x: 3, y: 2),
-          Piece(6, label: '春', width: 1, height: 1, x: 1, y: 0),
-          Piece(7, label: '夏', width: 1, height: 1, x: 2, y: 0),
-          Piece(8, label: '秋', width: 1, height: 1, x: 1, y: 3),
-          Piece(9, label: '冬', width: 1, height: 1, x: 2, y: 3),
-        ];
-
-  GameState.level3() // difficult level: optimal solution is 81 steps
-      : boardSize = const Pair(4, 5),
-        pieces = [
-          Piece(0, label: '曹操', width: 2, height: 2, x: 1, y: 0),
-          Piece(1, label: '黄\n忠', width: 1, height: 2, x: 0, y: 0),
-          Piece(2, label: '张\n飞', width: 1, height: 2, x: 3, y: 0),
-          Piece(3, label: '马\n超', width: 1, height: 2, x: 0, y: 2),
-          Piece(4, label: '关羽', width: 2, height: 1, x: 1, y: 2),
-          Piece(5, label: '赵\n云', width: 1, height: 2, x: 3, y: 2),
-          Piece(6, label: '春', width: 1, height: 1, x: 1, y: 3),
-          Piece(7, label: '夏', width: 1, height: 1, x: 2, y: 3),
-          Piece(8, label: '秋', width: 1, height: 1, x: 0, y: 4),
-          Piece(9, label: '冬', width: 1, height: 1, x: 3, y: 4),
-        ];
-
-  GameState.level4()
+  GameState.numbersPuzzle()
       : boardSize = const Pair(4, 4),
         pieces = [
           Piece(1, label: '1', width: 1, height: 1, x: 0, y: 0),
@@ -77,7 +43,7 @@ class GameState {
           Piece(15, label: '15', width: 1, height: 1, x: 2, y: 3),
         ];
 
-  move(Piece piece, int dx, int dy) {
+  bool canMove(Piece piece, int dx, int dy) {
     final destX = piece.x + dx;
     final destY = piece.y + dy;
 
@@ -88,7 +54,7 @@ class GameState {
         destX + (piece.width - 1) >= boardSize.x ||
         destY < 0 ||
         destY + (piece.height - 1) >= boardSize.y) {
-      return;
+      return false;
     }
 
     // Make sure no other pieces are in the way.
@@ -106,18 +72,15 @@ class GameState {
         .toList();
 
     final collision = dest.any(others.contains);
-
     if (collision) {
-      print('collision');
-      return;
+      return false;
     }
 
-    // Move the piece to its destination.
-    piece.x = destX;
-    piece.y = destY;
+    // Looks like we are allowed to make this move.
+    return true;
   }
 
-  bool checkWinCondition() {
+  bool hasWon() {
     final cc = pieces.singleWhere((p) => p.id == 0);
     return cc.x == 1 && cc.y == 3;
   }
