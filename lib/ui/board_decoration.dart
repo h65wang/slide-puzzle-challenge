@@ -2,14 +2,22 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../game_state.dart';
 import 'board_config.dart';
 import 'exit_arrows.dart';
 import 'info_display.dart';
 
+/// A widget that decorates the game board with blur and beam effects. It also
+/// includes the header row [InfoDisplay] and the footer [ExitArrows].
 class BoardDecoration extends StatefulWidget {
+  final GameState gameState;
   final Widget child;
 
-  const BoardDecoration({Key? key, required this.child}) : super(key: key);
+  const BoardDecoration({
+    Key? key,
+    required this.gameState,
+    required this.child,
+  }) : super(key: key);
 
   @override
   _BoardDecorationState createState() => _BoardDecorationState();
@@ -17,14 +25,14 @@ class BoardDecoration extends StatefulWidget {
 
 class _BoardDecorationState extends State<BoardDecoration>
     with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(
+  late final _beamController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1400),
   )..repeat(reverse: true);
 
   @override
   void dispose() {
-    _controller.dispose();
+    _beamController.dispose();
     super.dispose();
   }
 
@@ -46,7 +54,7 @@ class _BoardDecorationState extends State<BoardDecoration>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
         child: _BeamTransition(
-          animation: _controller,
+          animation: _beamController,
           child: Stack(
             clipBehavior: Clip.none, // it'll be clipped by ClipRRect anyway
             children: [
@@ -66,7 +74,7 @@ class _BoardDecorationState extends State<BoardDecoration>
                   ),
                 ),
               ),
-              const InfoDisplay(), // header
+              InfoDisplay(widget.gameState), // header
               const ExitArrows(), // footer
             ],
           ),

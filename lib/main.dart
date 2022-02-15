@@ -2,10 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'game_state.dart';
-import 'ui/backdrop_paint.dart';
 import 'ui/board_config.dart';
-import 'ui/game_board.dart';
+import 'ui/backdrop_paint.dart';
+import 'ui/puzzle_level.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,13 +31,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+  static const levelTransitionDuration = Duration(milliseconds: 300);
+
   // Controls the level-transition animation.
   late final _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 300),
+    duration: levelTransitionDuration,
   )..forward(from: 0.0);
 
-  int _currentLevel = 0;
+  int _currentLevel = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -51,23 +52,25 @@ class _HomePageState extends State<HomePage>
         child: Stack(
           key: ValueKey(_currentLevel),
           children: [
+            // Background: a falling text effect wrapped in a repaint boundary
+            // because the rest of the app usually updates at different times.
             const RepaintBoundary(
               child: BackdropPaint(),
             ),
+            // A single level of the puzzle, wrapped in some animation widgets
+            // used for transitioning between levels.
             ScaleTransition(
               scale: _controller,
               child: SizeTransition(
                 sizeFactor: _controller,
                 child: Center(
-                  child: GameBoard(
-                    gameState: GameState.level(_currentLevel),
+                  child: PuzzleLevel(
+                    level: _currentLevel,
                     onWin: () async {
-                      await Future.delayed(const Duration(milliseconds: 1000));
+                      await Future.delayed(levelTransitionDuration);
                       _controller.reverse();
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      setState(() {
-                        _currentLevel++;
-                      });
+                      await Future.delayed(levelTransitionDuration);
+                      setState(() => _currentLevel++);
                       _controller.forward();
                     },
                   ),

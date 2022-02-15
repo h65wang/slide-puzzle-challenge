@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'board_config.dart';
 
 class ShinyText extends StatefulWidget {

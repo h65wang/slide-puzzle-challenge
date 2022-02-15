@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class BoardConfig extends InheritedWidget {
   /// The animation duration for a puzzle piece to move to its final position.
-  final Duration slideDuration = const Duration(milliseconds: 500);
+  final Duration slideDuration = const Duration(milliseconds: 300);
 
   /// The width and height of a 1x1 piece.
   final double unitSize;

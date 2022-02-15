@@ -1,55 +1,29 @@
+import 'package:flutter/foundation.dart';
+
 import 'level_data.dart';
 
 class GameState {
-  final Pair boardSize;
-  late final List<Piece> pieces;
+  final int level; // current level, final, new level will be a new [GameState]
+  final Coordinates boardSize; // the size of the game board, usually 4x5
 
-  GameState.level(int level) : boardSize = const Pair(4, 5) {
-    switch (level % 3) {
-      case 0:
-        print('Entering level 1');
-        pieces = LevelData.level1();
-        break;
-      case 1:
-        print('Entering level 2');
-        pieces = LevelData.level2();
-        break;
-      case 2:
-        print('Entering level 3');
-        pieces = LevelData.level3();
-        break;
-      default:
-        throw 'Invalid level selection: $level';
-    }
+  late List<Piece> pieces; // the pieces on the board
+
+  ValueNotifier<int> stepCounter = ValueNotifier(0); // total steps used
+
+  GameState.level(this.level) : boardSize = const Coordinates(4, 5) {
+    reset();
   }
 
-  GameState.numbersPuzzle()
-      : boardSize = const Pair(4, 4),
-        pieces = [
-          Piece(1, label: '1', width: 1, height: 1, x: 0, y: 0),
-          Piece(2, label: '2', width: 1, height: 1, x: 1, y: 0),
-          Piece(3, label: '3', width: 1, height: 1, x: 2, y: 0),
-          Piece(4, label: '4', width: 1, height: 1, x: 3, y: 0),
-          Piece(5, label: '5', width: 1, height: 1, x: 0, y: 1),
-          Piece(6, label: '6', width: 1, height: 1, x: 1, y: 1),
-          Piece(7, label: '7', width: 1, height: 1, x: 2, y: 1),
-          Piece(8, label: '8', width: 1, height: 1, x: 3, y: 1),
-          Piece(9, label: '9', width: 1, height: 1, x: 0, y: 2),
-          Piece(10, label: '10', width: 1, height: 1, x: 1, y: 2),
-          Piece(11, label: '11', width: 1, height: 1, x: 2, y: 2),
-          Piece(12, label: '12', width: 1, height: 1, x: 3, y: 2),
-          Piece(13, label: '13', width: 1, height: 1, x: 0, y: 3),
-          Piece(14, label: '14', width: 1, height: 1, x: 1, y: 3),
-          Piece(15, label: '15', width: 1, height: 1, x: 2, y: 3),
-        ];
-
+  /// Returns whether a piece can be legally moved towards dx dy.
+  ///
+  /// For example, if dx = 1 and dy = 0, it returns whether the piece can be
+  /// moved 1 step to the right. It checks that the piece will still be inside
+  /// the board boundary, and verifies no other pieces are in the way.
   bool canMove(Piece piece, int dx, int dy) {
     final destX = piece.x + dx;
     final destY = piece.y + dy;
 
-    print('Trying to move ${piece.label} to ($destX, $destY).');
-
-    // Make sure it's within the bounds of the board.
+    // Make sure the destination is within the bounds of the board.
     if (destX < 0 ||
         destX + (piece.width - 1) >= boardSize.x ||
         destY < 0 ||
@@ -57,17 +31,12 @@ class GameState {
       return false;
     }
 
-    // Make sure no other pieces are in the way.
-    final dest = Piece.occupying(
-      destX,
-      destY,
-      piece.width,
-      piece.height,
-    );
+    // Make sure no other pieces are already occupying the destination spot.
+    final dest = Piece.occupies(destX, destY, piece.width, piece.height);
 
-    List<Pair> others = pieces
+    List<Coordinates> others = pieces
         .where((p) => p.id != piece.id)
-        .map((p) => p.spots)
+        .map((p) => p.locations)
         .expand((i) => i)
         .toList();
 
@@ -80,51 +49,85 @@ class GameState {
     return true;
   }
 
+  /// Returns whether the current game is in a winning state.
   bool hasWon() {
+    // Check if the core piece is at the exit location.
     final cc = pieces.singleWhere((p) => p.id == 0);
     return cc.x == 1 && cc.y == 3;
+  }
+
+  /// Moves all pieces back to their original positions, and resets the step
+  /// counter to 0 (this triggers value notifier).
+  void reset() {
+    stepCounter.value = 0;
+    switch (level) {
+      case 1:
+        pieces = LevelData.level1();
+        break;
+      case 2:
+        pieces = LevelData.level2();
+        break;
+      default:
+        pieces = LevelData.level3();
+        break;
+    }
   }
 }
 
 class Piece {
-  final int id;
-  final String label;
-  final int width, height;
-  int x, y;
+  final int id; // should be unique in a level
+  final String label; // the display text on the piece
+  final int width, height; // the size of the piece, usually 1
+  late ValueNotifier<Coordinates> coordinates; // x, y coordinates of the piece
+
+  int get x => coordinates.value.x;
+
+  int get y => coordinates.value.y;
 
   Piece(
     this.id, {
     required this.label,
     required this.width,
     required this.height,
-    required this.x,
-    required this.y,
-  });
+    required x,
+    required y,
+  }) : coordinates = ValueNotifier(Coordinates(x, y));
 
-  List<Pair> get spots => occupying(x, y, width, height);
+  /// Moves the current piece towards dx dy, regardless if it's legal.
+  void move(int dx, int dy) => coordinates.value = Coordinates(x + dx, y + dy);
 
-  static List<Pair> occupying(int x, int y, int width, int height) {
+  /// Returns a list of [Coordinates] that this piece occupies.
+  List<Coordinates> get locations => occupies(x, y, width, height);
+
+  /// Returns a list of [Coordinates] that a piece occupies.
+  static List<Coordinates> occupies(int x, int y, int width, int height) {
     return [
       for (int i = 0; i < width; i++)
-        for (int j = 0; j < height; j++) Pair(x + i, y + j),
+        for (int j = 0; j < height; j++) Coordinates(x + i, y + j),
     ];
   }
 }
 
-class Pair {
+/// The (x, y) coordinates, typically used to represent [Piece] position.
+///
+/// For example, (0, 0) means it's at the top-left corner of the board.
+class Coordinates {
   final int x;
   final int y;
 
-  const Pair(this.x, this.y);
+  const Coordinates(this.x, this.y);
 
   @override
   bool operator ==(Object? other) =>
       identical(this, other) ||
-      other is Pair &&
+      other is Coordinates &&
           runtimeType == other.runtimeType &&
           x == other.x &&
           y == other.y;
 
   @override
-  String toString() => 'Position($x, $y)';
+  String toString() => 'Coordinate($x, $y)';
+
+  @override
+  int get hashCode => '$x,$y'.hashCode;
 }

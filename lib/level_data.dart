@@ -38,7 +38,7 @@ class LevelData {
         Piece(9, label: '冬', width: 1, height: 1, x: 2, y: 3),
       ];
 
-  /// Level 3: a difficult level, optimal solution is 81 moves
+  /// Level 3: a rather difficult level
   static level3() => [
         Piece(0, label: '曹操', width: 2, height: 2, x: 1, y: 0),
         Piece(1, label: '黄\n忠', width: 1, height: 2, x: 0, y: 0),
