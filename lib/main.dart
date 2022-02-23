@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage>
         child: Stack(
           key: ValueKey(_currentLevel),
           children: [
-            // Background: a falling text effect wrapped in a repaint boundary
+            // Background: a custom painter wrapped in a repaint boundary
             // because the rest of the app usually updates at different times.
             const RepaintBoundary(
               child: BackdropPaint(),
