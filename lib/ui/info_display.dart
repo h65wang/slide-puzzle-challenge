@@ -38,10 +38,11 @@ class InfoDisplay extends StatelessWidget {
             child: _buildBorder(
               context: context,
               unitSize: unitSize,
-              child: Text(
-                'Lv. ${gameState.level}',
-                style: textStyle,
-                textAlign: TextAlign.left,
+              child: AnimatedFlipCounter(
+                value: gameState.level,
+                prefix: 'Lv. ',
+                textStyle: textStyle,
+                mainAxisAlignment: MainAxisAlignment.start,
               ),
             ),
           ),
@@ -70,6 +71,7 @@ class InfoDisplay extends StatelessWidget {
                     value: value,
                     wholeDigits: 3,
                     textStyle: textStyle,
+                    mainAxisAlignment: MainAxisAlignment.end,
                   ),
                 );
               },
