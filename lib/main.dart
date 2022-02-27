@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'ui/board_config.dart';
 import 'ui/backdrop_paint.dart';
 import 'ui/puzzle_level.dart';
+import 'ui/tutorial_dialog.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,12 +35,14 @@ class _HomePageState extends State<HomePage>
   static const levelTransitionDuration = Duration(milliseconds: 300);
 
   // Controls the level-transition animation.
-  late final _controller = AnimationController(
+  late final _animationController = AnimationController(
     vsync: this,
     duration: levelTransitionDuration,
   )..forward(from: 0.0);
 
-  int _currentLevel = 1;
+  late final _backdropController = BackdropController();
+
+  int _currentLevel = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -50,36 +53,51 @@ class _HomePageState extends State<HomePage>
       body: BoardConfig(
         unitSize: unitSize,
         child: Stack(
-          key: ValueKey(_currentLevel),
           children: [
             // Background: a custom painter wrapped in a repaint boundary
             // because the rest of the app usually updates at different times.
-            const RepaintBoundary(
-              child: BackdropPaint(),
+            RepaintBoundary(
+              child: BackdropPaint(
+                controller: _backdropController,
+              ),
             ),
+            if (_currentLevel == 0)
+              TutorialDialog(
+                onDismiss: () {
+                  setState(() {
+                    _currentLevel = 1;
+                    _backdropController.celebrate();
+                  });
+                },
+              ),
             // A single level of the puzzle, wrapped in some animation widgets
             // used for transitioning between levels.
-            ScaleTransition(
-              scale: _controller,
-              child: SizeTransition(
-                sizeFactor: _controller,
-                child: Center(
-                  child: PuzzleLevel(
-                    level: _currentLevel,
-                    onWin: () async {
-                      await Future.delayed(levelTransitionDuration);
-                      _controller.reverse();
-                      await Future.delayed(levelTransitionDuration);
-                      setState(() => _currentLevel++);
-                      _controller.forward();
-                    },
+            if (_currentLevel > 0)
+              ScaleTransition(
+                scale: _animationController,
+                child: SizeTransition(
+                  sizeFactor: _animationController,
+                  child: Center(
+                    child: PuzzleLevel(
+                      key: ValueKey(_currentLevel),
+                      level: _currentLevel,
+                      onWin: _advanceToNextLevel,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  void _advanceToNextLevel() async {
+    await Future.delayed(levelTransitionDuration);
+    _backdropController.celebrate();
+    _animationController.reverse();
+    await Future.delayed(levelTransitionDuration);
+    setState(() => _currentLevel++);
+    _animationController.forward();
   }
 }

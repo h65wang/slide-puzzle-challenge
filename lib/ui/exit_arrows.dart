@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'board_config.dart';
 
-/// Displays 3 down arrows at the exit location.
+/// Displays 3 down arrows to indicate the exit location.
 class ExitArrows extends StatefulWidget {
   const ExitArrows({Key? key}) : super(key: key);
 
@@ -29,28 +29,22 @@ class _ExitArrowsState extends State<ExitArrows>
     final unitSize = BoardConfig.of(context).unitSize;
     final color = BoardConfig.of(context).corePieceColor1;
 
-    return Positioned(
-      left: unitSize,
-      right: unitSize,
-      top: unitSize * 6,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (BuildContext context, Widget? child) {
-          final v = _controller.value.truncate();
-
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              for (int i = 0; i < 3; i++)
-                Icon(
-                  Icons.arrow_drop_down,
-                  size: unitSize * 0.3,
-                  color: i == v ? Colors.white : color,
-                )
-            ],
-          );
-        },
-      ),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? child) {
+        final v = _controller.value.truncate();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (int i = 0; i < 3; i++)
+              Icon(
+                Icons.arrow_drop_down,
+                size: unitSize * 0.3,
+                color: i == v ? Colors.white : color,
+              )
+          ],
+        );
+      },
     );
   }
 }

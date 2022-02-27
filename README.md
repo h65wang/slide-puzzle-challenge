@@ -6,26 +6,41 @@ targeting mobile, desktop, and the web from a single code base.
 The goal of the game is to navigate Cao Cao (the biggest piece) to the exit at the bottom, by
 rearranging puzzle pieces.
 
+## Release Notes
+
+#### v1.1.0
+
+- Added a simple tutorial screen.
+- Fixed a bug where the web version was not rendering correctly on mobile browsers.
+
+#### v1.0.0
+
+- Initial release for all platforms.
+
 ## Multi-platform
 
-The project is written in Flutter and runs on desktop platforms including Windows, macOS, Linux, as
-well as mobile platforms including Android and iOS. The game is also available as a web app, which
-can be accessed from any desktop browser.
+The project is made with Flutter and runs on desktop platforms including Windows, macOS, Linux,
+Android, iOS, and the web.
 
-![multi-platform](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/multi-platform.jpg)
+When build for web, make sure to use `canvaskit` renderer for best performance on mobile browsers.
+You can do so with `flutter build web --web-renderer canvaskit` command.
 
-I mostly use Flutter to develop mobile apps. Although I've used Flutter Web for a few projects in
-the past, this was my first time trying out Flutter for Desktop. The setup was surprisingly simple,
-and I'm very happy with the result.
+<img alt="multi-platform: a photo of the app running on multiple devices" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/multi-platform.jpg" />
 
-## Live Stream
+I mostly use Flutter to develop mobile apps in the past. Although I've used Flutter Web for a few
+projects in the past, this was my first time trying out Flutter for Desktop. The setup was
+surprisingly simple, and I'm very happy with the result.
+
+## Live-stream
 
 The creation of the entire project was streamed live. With viewers voting on things such as color
 choices, together we built this project in 12 live-stream sessions. "Initial commit" contains the
 "counter" demo that comes with new Flutter projects, and 12 subsequent commits correspond to each of
 the stream sessions.
 
-![live-stream](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/live-stream.jpg)
+<img alt="live-stream: a screenshot of a live coding session" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/live-stream.jpg" />
 
 After the project is completed on live stream, I then made a few more commits enabling desktop
 support for Windows, macOS, and Linux, and fixing some minor issues and updating the README file.
@@ -95,7 +110,7 @@ you won't miss the next live stream or video from me.
 
 ### Animations
 
-There are a total of 19 tutorial videos on Flutter Animations, divided into 3 sections: implicit,
+So far I've made 19 video tutorials on Flutter Animations, divided into 3 sections: implicit,
 explicit and others.
 
 - [How to choose the right animations for your needs](https://www.bilibili.com/video/BV1dt4y117J9)

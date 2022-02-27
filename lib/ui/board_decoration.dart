@@ -75,7 +75,12 @@ class _BoardDecorationState extends State<BoardDecoration>
                 ),
               ),
               InfoDisplay(widget.gameState), // header
-              const ExitArrows(), // footer
+              Positioned(
+                left: unitSize,
+                right: unitSize,
+                top: unitSize * 6,
+                child: const ExitArrows(),
+              ), // footer
             ],
           ),
         ),

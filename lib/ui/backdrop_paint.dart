@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class BackdropPaint extends StatefulWidget {
-  const BackdropPaint({Key? key}) : super(key: key);
+  final BackdropController? controller;
+
+  const BackdropPaint({Key? key, this.controller}) : super(key: key);
 
   @override
   _BackdropPaintState createState() => _BackdropPaintState();
@@ -11,16 +13,21 @@ class BackdropPaint extends StatefulWidget {
 
 class _BackdropPaintState extends State<BackdropPaint>
     with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(
+  late final _backdropController = widget.controller ?? BackdropController();
+  late final _animationController = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 1),
   )..repeat();
 
-  late final _painter = _FallingDotsPainter(controller: _controller);
+  late final _painter = _FallingDotsPainter(
+    animationController: _animationController,
+    controller: _backdropController,
+  );
 
   @override
   void dispose() {
-    _controller.dispose();
+    _animationController.dispose();
+    _backdropController.dispose();
     super.dispose();
   }
 
@@ -33,10 +40,33 @@ class _BackdropPaintState extends State<BackdropPaint>
   }
 }
 
-class _FallingDotsPainter extends CustomPainter {
-  _FallingDotsPainter({required controller}) : super(repaint: controller);
+class BackdropController {
+  final ValueNotifier<bool> _colorful = ValueNotifier(false);
 
-  late final List<Snake> _lines = List.generate(200, Snake.new);
+  /// Makes the backdrop colorful; used for level-transition.
+  void celebrate() => _colorful.value = true;
+
+  void dispose() => _colorful.dispose();
+}
+
+class _FallingDotsPainter extends CustomPainter {
+  final BackdropController controller;
+
+  _FallingDotsPainter({
+    required AnimationController animationController,
+    required this.controller,
+  }) : super(repaint: animationController) {
+    controller._colorful.addListener(() {
+      if (controller._colorful.value) {
+        controller._colorful.value = false;
+        for (final snake in _snakes) {
+          snake.celebrate();
+        }
+      }
+    });
+  }
+
+  late final List<Snake> _snakes = List.generate(200, Snake.new);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -45,9 +75,9 @@ class _FallingDotsPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawRect(Offset.zero & size, paint);
 
-    for (final line in _lines) {
-      line.tick(size.height);
-      line.paint(canvas, size);
+    for (final snake in _snakes) {
+      snake.tick(size.height);
+      snake.paint(canvas, size);
     }
   }
 
@@ -69,11 +99,11 @@ class Snake {
 
   Snake(this.index) : rnd = Random() {
     reset();
-    length = _rndBetween(20, 80).toInt();
-    colorful = true;
-    speed = _rndBetween(1.0, 2.0);
+    // get some random starting positions to make the first frame look natural
+    y = _rndBetween(-200, 100);
   }
 
+  /// When a snake reaches the bottom, it's reset to the top with new stats.
   reset() {
     length = _rndBetween(10, 20).toInt();
     sizeVariance = _rndBetween(0.3, 0.5);
@@ -82,12 +112,20 @@ class Snake {
     y = 0;
   }
 
+  /// A special reset to create longer, faster, and colorful snakes.
+  celebrate() {
+    reset();
+    length = _rndBetween(20, 80).toInt();
+    colorful = true;
+    speed = _rndBetween(1.0, 2.0);
+  }
+
   tick(double screenHeight) {
-    if ((y - (length * 2)) * dotSize < screenHeight) {
-      y += speed;
-    } else {
+    if ((y - (length * 2)) * dotSize > screenHeight) {
+      // this snake has been off-screen for a while, reset it
       reset();
     }
+    y += speed;
   }
 
   paint(Canvas canvas, Size size) {
