@@ -27,6 +27,7 @@ class PuzzlePiece extends StatefulWidget {
 
 class _PuzzlePieceState extends State<PuzzlePiece> {
   bool _dispatched = false;
+  late Offset _dragStart;
 
   @override
   Widget build(BuildContext context) {
@@ -54,18 +55,19 @@ class _PuzzlePieceState extends State<PuzzlePiece> {
     );
 
     return GestureDetector(
-      onPanStart: (_) {
+      onPanStart: (DragStartDetails details) {
         _dispatched = false;
+        _dragStart = details.localPosition;
       },
       onPanUpdate: (DragUpdateDetails details) {
         if (_dispatched) return;
-        final direction = _getDirection(details);
+        final delta = details.localPosition - _dragStart;
+        final direction = _getDirection(delta, 5);
+        if (direction == null) return;
         // Check if the user input is a legal move
         if (widget.gameState.canMove(widget.piece, direction.x, direction.y)) {
           // move the piece (this triggers a value notifier)
           widget.piece.move(direction.x, direction.y);
-          // increment step counter
-          widget.gameState.stepCounter.value += 1;
           // fire the callback
           widget.onMove?.call();
           // do not dispatch the same move again
@@ -76,8 +78,10 @@ class _PuzzlePieceState extends State<PuzzlePiece> {
     );
   }
 
-  Coordinates _getDirection(DragUpdateDetails details) {
-    final delta = details.delta;
+  Coordinates? _getDirection(Offset delta, [double minThreshold = 5.0]) {
+    if (delta.dx.abs() < minThreshold && delta.dy.abs() < minThreshold) {
+      return null; // ignore tiny movements
+    }
     if (delta.dx.abs() > delta.dy.abs()) {
       return Coordinates(delta.dx < 0 ? -1 : 1, 0); // left or right
     } else {

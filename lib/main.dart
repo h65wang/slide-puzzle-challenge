@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'level_transition.dart';
 import 'ui/board_config.dart';
 import 'ui/backdrop_paint.dart';
 import 'ui/puzzle_level.dart';
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Slide Puzzle',
+      title: 'Slide Puzzle: Escape of Cao Cao',
       home: HomePage(),
     );
   }
@@ -30,25 +31,29 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
-  static const levelTransitionDuration = Duration(milliseconds: 300);
-
-  // Controls the level-transition animation.
-  late final _animationController = AnimationController(
-    vsync: this,
-    duration: levelTransitionDuration,
-  )..forward(from: 0.0);
-
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  // Controls the backdrop painter to trigger color change.
   late final _backdropController = BackdropController();
+
+  // Controls the level entrance animation.
+  late final _levelBeginController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
+
+  // Controls the level exit animation.
+  late final _levelEndController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  );
 
   int _currentLevel = 0;
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    // Calculate unit size: side-length (in logic pixels) of a 1x1 tile.
     final unitSize = min(screenSize.width / 6, screenSize.height / 8);
-
     return Scaffold(
       body: BoardConfig(
         unitSize: unitSize,
@@ -63,25 +68,20 @@ class _HomePageState extends State<HomePage>
             ),
             if (_currentLevel == 0)
               TutorialDialog(
-                onDismiss: () {
-                  setState(() {
-                    _currentLevel = 1;
-                    _backdropController.celebrate();
-                  });
-                },
+                onDismiss: _advanceToNextLevel,
               ),
-            // A single level of the puzzle, wrapped in some animation widgets
-            // used for transitioning between levels.
             if (_currentLevel > 0)
-              ScaleTransition(
-                scale: _animationController,
-                child: SizeTransition(
-                  sizeFactor: _animationController,
-                  child: Center(
+              Center(
+                child: ScaleTransition(
+                  scale: CurveTween(curve: Curves.easeOut)
+                      .animate(_levelBeginController),
+                  child: LevelEndTransition(
+                    animation: _levelEndController,
                     child: PuzzleLevel(
+                      // A single level of the puzzle.
                       key: ValueKey(_currentLevel),
                       level: _currentLevel,
-                      onWin: _advanceToNextLevel,
+                      onWin: _onLevelCompleted,
                     ),
                   ),
                 ),
@@ -92,12 +92,20 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  void _advanceToNextLevel() async {
-    await Future.delayed(levelTransitionDuration);
+  void _advanceToNextLevel() {
+    _levelBeginController.forward(from: 0.0);
     _backdropController.celebrate();
-    _animationController.reverse();
-    await Future.delayed(levelTransitionDuration);
     setState(() => _currentLevel++);
-    _animationController.forward();
+  }
+
+  void _onLevelCompleted(int level, int steps) async {
+    // Play animation: game board falling down and 3D piece spinning.
+    await _levelEndController.forward();
+    // Embrace the void: pause and find peace in the emptiness.
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Reset the animation controller for the next time.
+    _levelEndController.reset();
+    // Continue on to the next level.
+    _advanceToNextLevel();
   }
 }

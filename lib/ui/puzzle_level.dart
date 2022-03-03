@@ -7,7 +7,7 @@ import 'puzzle_piece.dart';
 
 class PuzzleLevel extends StatefulWidget {
   final int level;
-  final VoidCallback onWin;
+  final void Function(int level, int steps) onWin;
 
   const PuzzleLevel({Key? key, required this.level, required this.onWin})
       : super(key: key);
@@ -19,9 +19,6 @@ class PuzzleLevel extends StatefulWidget {
 class _PuzzleLevelState extends State<PuzzleLevel>
     with SingleTickerProviderStateMixin {
   late final GameState _gameState = GameState.level(widget.level);
-
-  final GlobalKey _globalKey = GlobalKey();
-  bool hasWon = false;
 
   @override
   initState() {
@@ -40,8 +37,6 @@ class _PuzzleLevelState extends State<PuzzleLevel>
 
     // Every puzzle piece inside the game board.
     final puzzlePieces = Stack(
-      // Use a `GlobalKey` to keep widget state during level-ending animation
-      key: _globalKey,
       // Do not clip, because pieces need to fly out when level ends
       clipBehavior: Clip.none,
       children: [
@@ -52,67 +47,70 @@ class _PuzzleLevelState extends State<PuzzleLevel>
         ),
         // First, draw all the piece shadows, so they are behind everything.
         for (final p in _gameState.pieces)
-          AnimatedPieceComponent(
+          _AnimatedPieceComponent(
             piece: p,
             child: PuzzlePieceShadow(piece: p),
           ),
         // Next, draw all the piece attachments.
         for (final p in _gameState.pieces)
-          AnimatedPieceComponent(
+          _AnimatedPieceComponent(
             piece: p,
             child: PuzzlePieceAttachment(piece: p),
           ),
         // Lastly, draw pieces so they are on top of shadows and attachments.
         for (final p in _gameState.pieces)
-          AnimatedPieceComponent(
+          _AnimatedPieceComponent(
             piece: p,
             child: PuzzlePiece(
               piece: p,
               gameState: _gameState,
-              onMove: _checkWinCondition,
+              onMove: _onMove,
             ),
           ),
       ],
     );
 
-    if (hasWon) {
-      return puzzlePieces;
-    } else {
-      return BoardDecoration(
-        gameState: _gameState,
-        child: puzzlePieces,
-      );
-    }
+    return BoardDecoration(
+      gameState: _gameState,
+      child: puzzlePieces,
+    );
   }
 
-  _checkWinCondition() async {
+  void _onMove() async {
+    // Increment the step counter.
+    _gameState.stepCounter.value += 1;
+    // Check if the puzzle is solved.
     if (_gameState.hasWon()) {
-      // Level ending animation: set every other pieces (except the core piece)
-      // backwards, and set the core piece slightly backwards too.
-      _gameState.pieces.where((p) => p.id != 0).forEach((p) => p.move(0, -18));
-      _gameState.pieces.singleWhere((p) => p.id == 0).move(0, -2);
-      // Call the parent to advance to the next level.
-      widget.onWin();
-      setState(() => hasWon = true);
+      // Let's all take a moment to admire Cao Cao at the exit spot.
+      await Future.delayed(const Duration(milliseconds: 300));
+      // Then we'll notify our parent, to begin level transition animation.
+      widget.onWin(_gameState.level, _gameState.stepCounter.value);
+      // At the same time, we rapidly push the core piece (Cao Cao) forward,
+      // so it will be out of view. Meanwhile, our parent will fabricate a
+      // 3D version at the same spot to fill in.
+      _gameState.pieces.singleWhere((p) => p.id == 0).move(0, 1000);
     }
   }
 }
 
-class AnimatedPieceComponent extends StatefulWidget {
+/// This is a wrapper for pieces, shadows, and attachments.
+/// It wraps the child in [AnimatedPositioned] and [ValueListenableBuilder].
+class _AnimatedPieceComponent extends StatefulWidget {
   final Piece piece;
   final Widget child;
 
-  const AnimatedPieceComponent({
+  const _AnimatedPieceComponent({
     Key? key,
     required this.piece,
     required this.child,
   }) : super(key: key);
 
   @override
-  State<AnimatedPieceComponent> createState() => _AnimatedPieceComponentState();
+  State<_AnimatedPieceComponent> createState() =>
+      _AnimatedPieceComponentState();
 }
 
-class _AnimatedPieceComponentState extends State<AnimatedPieceComponent> {
+class _AnimatedPieceComponentState extends State<_AnimatedPieceComponent> {
   /// A cache of device screen size from the last frame.
   ///
   /// This is updated in the `build` method every time it's rebuilt.

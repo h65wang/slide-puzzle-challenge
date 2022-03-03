@@ -21,6 +21,7 @@ class _TutorialDialogState extends State<TutorialDialog> {
       children: [
         const CupertinoPopupSurface(
           child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 64, horizontal: 32),
               child: _TutorialContent(),
@@ -45,8 +46,11 @@ class _TutorialDialogState extends State<TutorialDialog> {
         builder: (BuildContext context, BoxConstraints constraints) {
           final width = constraints.maxWidth;
           if (width < 600) {
-            return Padding(
-              padding: const EdgeInsets.all(32),
+            // If the width is small, it's very likely to be a phone,
+            // and modern phones are very likely to have irregular screens.
+            // So we use `SafeArea` here to avoid the dialog being cut off.
+            return SafeArea(
+              minimum: const EdgeInsets.all(32),
               child: popup,
             );
           }
