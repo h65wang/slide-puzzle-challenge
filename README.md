@@ -1,12 +1,18 @@
 # Slide Puzzle: Escape of Cao Cao
 
-A puzzle game made on live-stream with Flutter, demonstrating various animation techniques and
-targeting mobile, desktop, and the web from a single code base.
+This is a puzzle game made on live-stream with Flutter, demonstrating various animation techniques
+and targeting mobile, desktop, and the web from a single code base.
 
-The goal of the game is to navigate Cao Cao (the biggest piece) to the exit at the bottom, by
-rearranging puzzle pieces.
+The goal of the game is to move "the biggest puzzle piece (Cao Cao)" to the "exit" at the bottom, in
+as few steps as possible.
 
 ## Release Notes
+
+#### v1.2.0
+
+- Added more levels.
+- Added a new 3D animation during level transitions.
+- Various UI and UX improvements.
 
 #### v1.1.0
 
@@ -19,47 +25,75 @@ rearranging puzzle pieces.
 
 ## Multi-platform
 
-The project is made with Flutter and runs on desktop platforms including Windows, macOS, Linux,
+The project is made with Flutter and runs on multiple platforms including Windows, macOS, Linux,
 Android, iOS, and the web.
-
-When build for web, make sure to use `canvaskit` renderer for best performance on mobile browsers.
-You can do so with `flutter build web --web-renderer canvaskit` command.
 
 <img alt="multi-platform: a photo of the app running on multiple devices" width="200"
 src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/multi-platform.jpg" />
 
-I mostly use Flutter to develop mobile apps in the past. Although I've used Flutter Web for a few
-projects in the past, this was my first time trying out Flutter for Desktop. The setup was
-surprisingly simple, and I'm very happy with the result.
+When building for web, make sure to use `canvaskit` renderer for better experience on mobile
+browsers. You can do so with `flutter build web --web-renderer canvaskit` command.
 
-## Live-stream
+## How It's Made
 
-The creation of the entire project was streamed live. With viewers voting on things such as color
-choices, together we built this project in 12 live-stream sessions. "Initial commit" contains the
-"counter" demo that comes with new Flutter projects, and 12 subsequent commits correspond to each of
-the stream sessions.
+#### Live Stream
 
 <img alt="live-stream: a screenshot of a live coding session" width="200"
 src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/live-stream.jpg" />
 
+The creation of the entire project was streamed live. With viewers discussing and voting on things
+like color choices, together, the initial version was built in 12 live-stream sessions.
+
+#### Commit History
+
+The "Initial commit" contains the famous "Flutter counter" demo that comes with new Flutter
+projects, and 12 subsequent commits correspond to each of the live stream sessions, ranging from
+Jan. 26 to Feb. 14, 2022.
+
 After the project is completed on live stream, I then made a few more commits enabling desktop
-support for Windows, macOS, and Linux, and fixing some minor issues and updating the README file.
+support, fixing minor issues and updating the README file. The initial version was released on Feb.
+22, and a [short video (less than 3 min)](https://www.youtube.com/watch?v=VFiejrt7uTk) explaining
+the project was published on the same day.
+
+#### Further Updates
+
+A few more improvements were made after the initial release. These improvements are not covered in
+the video, so I'll briefly summarize them here.
+
+##### New Tutorial Dialog
+
+A new "How to Play" screen was added to the game. It's a responsive dialog made with `LayoutBuilder`
+and `ConstrainedBox`, and decorated by `CupertinoPopupSurface`. It also used a
+`WillPopScope` to allow users to dismiss the dialog with the back button on Android devices.
+
+##### New End-Level Transition
+
+This is my first time trying to simulate 3D objects without any 3rd party tools or plugins in
+Flutter. It's made using `Transform` widgets to translate and rotate 6 rectangles to correct places
+to form a cuboid. I also created a super basic "design studio" interface to facilitate the
+development process.
+
+<img alt="a 3d cube made in flutter" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/cube-3d.gif" />
+
+Further optimizations were made so only up to 3 faces (visible to the viewers) are rendered at a
+time. This formed the basis for a new transition animation when a level is completed.
+
+<img alt="a 3d cube made in flutter" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/cao-3d.gif" />
 
 ## Web Demo
-
-[Web version (for Desktop browser) is available.](https://d1qjxjz3vso8bm.cloudfront.net/)
 
 [![web demo](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/web-demo.jpg)](
 https://d1qjxjz3vso8bm.cloudfront.net/)
 
-Known issue: the web version has some rendering issues when viewed from mobile browsers (for
-example, Chrome on Android). For the best experience, please use a **desktop browser**, or install
-the Android/iOS app.
+[A playable web version is available](https://d1qjxjz3vso8bm.cloudfront.net/). For the best
+experience, please use a desktop browser, or install the mobile app.
 
 ## Video Overview
 
 Watch the Video in [English](https://www.youtube.com/watch?v=VFiejrt7uTk)
-| [Chinese](https://www.bilibili.com/video/BV1y44y1n73G):
+| [Chinese](https://www.bilibili.com/video/BV1y44y1n73G).
 
 [![video](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-thumbnail.jpg)](
 https://www.youtube.com/watch?v=VFiejrt7uTk)
@@ -97,10 +131,12 @@ The simplified version looks similar but performs much better, even on low-end d
 
 ## What's Next
 
-Resolving the issue of the web version not rendering correctly on mobile browsers is a priority for
-the next version. I'll also be adding more levels to the game, and allowing users to select levels.
-In addition, the game could benefit from having an onboarding screen and a few more tooltips to
-explain the goal and mechanics to new players. Adding keyboard support is also on the list.
+- [x] Resolve web rendering issue for mobile browsers
+- [x] Add a tutorial screen to explain the game
+- [x] Add more levels to the game
+- [ ] Allow users to select levels
+- [ ] Add keyboard support
+- [ ] Improve swiping gesture
 
 # Extra Resources
 
@@ -110,7 +146,7 @@ you won't miss the next live stream or video from me.
 
 ### Animations
 
-So far I've made 19 video tutorials on Flutter Animations, divided into 3 sections: implicit,
+I've made a total of 19 video tutorials on Flutter Animations, divided into 3 sections: implicit,
 explicit and others.
 
 - [How to choose the right animations for your needs](https://www.bilibili.com/video/BV1dt4y117J9)
@@ -143,6 +179,9 @@ explicit and others.
 - [Bonus: create an asset with Rive tool](https://www.bilibili.com/video/BV1fv411z74W)
 
 ### Keys
+
+I've made 7 video tutorials on keys, covering basic concepts such as widgets and elements, 3 types
+of local keys, 2 different uses of global keys, and more.
 
 - [Spooky stuff when you forget to use keys](https://www.bilibili.com/video/BV1b54y1z7iD)
 - [Widgets, Elements and their States](https://www.bilibili.com/video/BV15k4y1B74z)
@@ -194,19 +233,19 @@ explicit and others.
 
 ### Coding challenge and follow-ups
 
-Sometimes I post questions for my viewers and then do follow-up videos to discuss all the creative
-solutions I receive, so we can learn from each other.
+(Sometimes I post questions for my viewers and then do follow-up videos to discuss all the creative
+solutions I receive, so we can learn from each other.)
 
-- [Different ways to detect screen rotation](https://www.bilibili.com/video/BV1So4y1d7dM)
-- [Different ways to implement the same animation](https://www.bilibili.com/video/BV1Ko4y1o7JB)
-- [The new and the old material buttons](https://www.bilibili.com/video/BV1vh411y7uH)
-- [Adaptive banner made with Pythagorean Theorem](https://www.bilibili.com/video/BV1mr4y1K7om)
-- [Creative ways to achieve diagonal layout](https://www.bilibili.com/video/BV13p4y1H7ni)
-- [Ink, InkWell, and Material](https://www.bilibili.com/video/BV1RV411v7bX)
-- [Different way to implement Hollowed Text](https://www.bilibili.com/video/BV1Sb4y1Q7U4)
-- [Adaptive watermark overlay with FittedBox](https://www.bilibili.com/video/BV1bU4y1h7yd)
+- [Pinch-to-zoom gallery with smooth transitions](https://www.bilibili.com/video/BV1cq4y1H7HX)
 - [A button that counts down with its border](https://www.bilibili.com/video/BV15b4y1Z7EU)
-- [Smooth zooming on GridView!](https://www.bilibili.com/video/BV1cq4y1H7HX)
+- [Adaptive watermark overlay with FittedBox](https://www.bilibili.com/video/BV1bU4y1h7yd)
+- [Different ways to implement Hollowed Text](https://www.bilibili.com/video/BV1Sb4y1Q7U4)
+- [Ink, InkWell, and Material](https://www.bilibili.com/video/BV1RV411v7bX)
+- [Creative ways to achieve diagonal layout](https://www.bilibili.com/video/BV13p4y1H7ni)
+- [Adaptive banner made with Pythagorean Theorem](https://www.bilibili.com/video/BV1mr4y1K7om)
+- [The new and the old material buttons](https://www.bilibili.com/video/BV1vh411y7uH)
+- [Different ways to implement the same animation](https://www.bilibili.com/video/BV1Ko4y1o7JB)
+- [Different ways to detect screen rotation](https://www.bilibili.com/video/BV1So4y1d7dM)
 
 ### Other popular topics
 

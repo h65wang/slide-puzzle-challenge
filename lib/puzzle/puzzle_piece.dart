@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../game_state.dart';
-import 'board_config.dart';
+import '../data/game_state.dart';
+import '../data/board_config.dart';
 import 'shiny_text.dart';
 
 /// A UI representation of the [Piece] data object on the screen.

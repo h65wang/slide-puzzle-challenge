@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../game_state.dart';
-import 'board_decoration.dart';
-import 'board_config.dart';
+import '../data/game_state.dart';
+import '../board/board_decoration.dart';
+import '../data/board_config.dart';
 import 'puzzle_piece.dart';
 
+/// This widget represents a single level of the puzzle.
 class PuzzleLevel extends StatefulWidget {
   final int level;
   final void Function(int level, int steps) onWin;

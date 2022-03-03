@@ -1,21 +1,21 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:slide_puzzle/ui/cao_3d.dart';
 
-import 'ui/board_config.dart';
+import '../data/board_config.dart';
+import 'cao_3d.dart';
 
-/// A test bench for [Cao3D] widget that displays a 3D puzzle piece.
-/// To use it, modify `main.dart` to make it call `runApp(Test3D())`.
-class Test3D extends StatefulWidget {
-  const Test3D({Key? key}) : super(key: key);
+/// A design studio used for developing and testing [Cao3D] widget.
+/// To use it, modify `main.dart` to make it call `runApp(Cao3DStudio())`.
+class Cao3DStudio extends StatefulWidget {
+  const Cao3DStudio({Key? key}) : super(key: key);
 
   @override
-  _Test3DState createState() => _Test3DState();
+  _Cao3DStudioState createState() => _Cao3DStudioState();
 }
 
-class _Test3DState extends State<Test3D> {
-  double _rx = 0.0, _ry = 0.0, _size = 100.0;
+class _Cao3DStudioState extends State<Cao3DStudio> {
+  double _rx = -0.5, _ry = 0.0, _size = 100.0;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,8 @@ class _Test3DState extends State<Test3D> {
                 const SizedBox(height: 48),
                 Text(
                   'rx: ${_rx.toStringAsFixed(2)}, '
-                  'ry: ${_ry.toStringAsFixed(2)}',
+                  'ry: ${_ry.toStringAsFixed(2)} '
+                  '(${(_ry / pi).toStringAsFixed(2)} pi)',
                   style: const TextStyle(fontFamily: 'Courier'),
                 ),
                 Slider(
@@ -48,7 +49,7 @@ class _Test3DState extends State<Test3D> {
                 ),
                 Slider(
                   min: 0.0,
-                  max: pi * 20,
+                  max: pi * 10,
                   value: _ry,
                   onChanged: (v) => setState(() => _ry = v),
                 ),

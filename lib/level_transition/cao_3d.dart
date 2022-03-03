@@ -1,8 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:slide_puzzle/ui/shiny_text.dart';
 
+import '../puzzle/shiny_text.dart';
+import 'level_end_transition.dart';
+
+/// A 3D version of the "Cao Cao" puzzle piece, used by [LevelEndTransition]
+/// to create a spinning 3D effect.
 class Cao3D extends StatelessWidget {
   final double width, height, depth;
   final double rotateX, rotateY;
@@ -18,28 +22,30 @@ class Cao3D extends StatelessWidget {
         assert(
             rotateX <= 1.2 && rotateX >= -1.2,
             'rotateX: $rotateX, '
-            'but only rotateX between -1.2 and 1.2 is supported.'),
+            'but only values between -1.2 and 1.2 are supported.'),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final beam = sin(rotateY - pi); // reflect light based on rotation
     late final front = Transform(
       transform: Matrix4.translationValues(0.0, 0.0, depth / -2),
       alignment: Alignment.center,
       child: Container(
         width: width,
         height: height,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-            colors: [
+            colors: const [
               Color(0xff2c867b),
+              Color(0xff399170),
               Color(0xff50a464),
               Color(0xff399170),
               Color(0xff2c867b),
             ],
-            stops: [0.0, 0.2, 0.4, 1.0],
+            stops: [0.0, 0.0 + beam, 0.2 + beam, 0.4 + beam, 1.0],
           ),
         ),
         child: const Center(child: ShinyText(label: '曹操')),
@@ -73,7 +79,12 @@ class Cao3D extends StatelessWidget {
     late final bottom = _buildSide(side: 2);
     late final port = _buildSide(side: 3);
 
-    // Determine the layer order, divided into 45 degree sections.
+    // Determine the layer order based on `rotateY`, divided into 45 degree
+    // sections. For example, when `rotateY` is between 0 deg and 45 deg, the
+    // "front" face should be drawn instead of the "back" face, and the
+    // "starboard" side should be drawn instead of the "port" side. Moreover,
+    // the "front" should appear on top of "starboard" because it's closer
+    // to the user/camera.
     if (rotateY < pi / 4) {
       children = [starboard, front];
     } else if (rotateY < pi / 2) {
@@ -92,7 +103,11 @@ class Cao3D extends StatelessWidget {
       children = [port, front];
     }
     if (rotateX > 0.0) {
-      // fixme: 0.0 is not perfect - did not consider perspective
+      // TODO: not perfect - does not consider perspective:
+      // When `rotateX` is positive but very small, like 0.1, when taking
+      // account of perspective, the "top" face should be drawn *behind* the
+      // front face, not *in front* of it. But this works reasonably well for
+      // larger values (like > 0.1) of `rotateX`.
       children.add(top);
     } else {
       children.add(bottom);
@@ -151,8 +166,7 @@ class Cao3D extends StatelessWidget {
             height: topOrBottom ? depth : height,
             decoration: const BoxDecoration(
               // color: Colors.primaries[side * 2].withOpacity(1.0),
-              color: const Color(0xff0b4040),
-              // borderRadius: BorderRadius.circular(unitSize * 0.04),
+              color: Color(0xff0b4040),
             ),
           ),
         ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'board_config.dart';
 
+import '../data/board_config.dart';
+
+/// A widget that displays texts with a shiny highlight, used by puzzle pieces.
 class ShinyText extends StatefulWidget {
   final String label;
 

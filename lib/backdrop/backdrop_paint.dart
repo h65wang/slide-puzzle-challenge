@@ -66,7 +66,7 @@ class _FallingDotsPainter extends CustomPainter {
     });
   }
 
-  late final List<Snake> _snakes = List.generate(200, Snake.new);
+  late final List<_Snake> _snakes = List.generate(200, _Snake.new);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -86,7 +86,7 @@ class _FallingDotsPainter extends CustomPainter {
 }
 
 /// A vertical line of falling dots, similar to a moving snake in a snake game.
-class Snake {
+class _Snake {
   static const dotSize = 20.0;
   final Random rnd;
   final int index; // the column index of this snake on screen
@@ -97,7 +97,7 @@ class Snake {
   late double speed;
   late double y;
 
-  Snake(this.index) : rnd = Random() {
+  _Snake(this.index) : rnd = Random() {
     reset();
     // get some random starting positions to make the first frame look natural
     y = _rndBetween(-200, 100);

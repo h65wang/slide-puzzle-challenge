@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../game_state.dart';
+import '../data/game_state.dart';
+import '../data/board_config.dart';
 import 'animated_flip_counter.dart';
-import 'board_config.dart';
 
 /// Displays the level and steps count, plus a "reset level" button.
 class InfoDisplay extends StatelessWidget {

@@ -1,30 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:slide_puzzle/game_state.dart';
-import 'package:slide_puzzle/ui/board_config.dart';
-import 'package:slide_puzzle/ui/exit_arrows.dart';
-import 'package:slide_puzzle/ui/puzzle_piece.dart';
 
-class TutorialDialog extends StatefulWidget {
+import 'package:slide_puzzle/data/game_state.dart';
+import 'package:slide_puzzle/data/board_config.dart';
+import 'package:slide_puzzle/board/exit_arrows.dart';
+import 'package:slide_puzzle/puzzle/puzzle_piece.dart';
+
+class TutorialDialog extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const TutorialDialog({Key? key, required this.onDismiss}) : super(key: key);
 
   @override
-  State<TutorialDialog> createState() => _TutorialDialogState();
-}
-
-class _TutorialDialogState extends State<TutorialDialog> {
-  @override
   Widget build(BuildContext context) {
-    final popup = Stack(
+    final dialog = Stack(
       children: [
-        const CupertinoPopupSurface(
+        CupertinoPopupSurface(
           child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 64, horizontal: 32),
-              child: _TutorialContent(),
+              padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
+              child: _TutorialContent(onDismiss: onDismiss),
             ),
           ),
         ),
@@ -34,39 +30,52 @@ class _TutorialDialogState extends State<TutorialDialog> {
           child: ClipOval(
             child: Material(
               shape: const CircleBorder(),
-              child: CloseButton(onPressed: widget.onDismiss),
+              child: CloseButton(onPressed: onDismiss),
             ),
           ),
         ),
       ],
     );
 
-    return Center(
+    final responsiveDialog = Center(
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          final width = constraints.maxWidth;
-          if (width < 600) {
+          if (constraints.maxWidth < 650) {
             // If the width is small, it's very likely to be a phone,
             // and modern phones are very likely to have irregular screens.
             // So we use `SafeArea` here to avoid the dialog being cut off.
             return SafeArea(
               minimum: const EdgeInsets.all(32),
-              child: popup,
+              child: dialog,
             );
           }
-          return FractionallySizedBox(
-            heightFactor: 0.8,
-            widthFactor: 0.6,
-            child: popup,
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: constraints.maxHeight * 0.8,
+              maxWidth: 600,
+            ),
+            child: dialog,
           );
         },
       ),
+    );
+
+    return WillPopScope(
+      // Dismiss the tutorial dialog when the user taps the back button,
+      // instead of quitting the entire app.
+      child: responsiveDialog,
+      onWillPop: () async {
+        onDismiss();
+        return false;
+      },
     );
   }
 }
 
 class _TutorialContent extends StatelessWidget {
-  const _TutorialContent({Key? key}) : super(key: key);
+  final VoidCallback onDismiss;
+
+  const _TutorialContent({Key? key, required this.onDismiss}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -115,8 +124,7 @@ class _TutorialContent extends StatelessWidget {
             style: body,
             children: [
               TextSpan(text: '\nPieces\n', style: header),
-              const TextSpan(text: '\nThere are 10 pieces in the game. '),
-              const TextSpan(text: 'The largest piece is '),
+              const TextSpan(text: '\nThe largest piece is '),
               TextSpan(text: 'Cao Cao', style: em),
               const TextSpan(text: '. All other pieces are '),
               TextSpan(text: 'blockers', style: em),
@@ -124,6 +132,8 @@ class _TutorialContent extends StatelessWidget {
               TextSpan(text: 'Cao Cao', style: em),
               const TextSpan(text: ' from reaching '),
               TextSpan(text: 'the exit', style: em),
+              const TextSpan(text: '. Swipe them away to clear a path for '),
+              TextSpan(text: 'Cao Cao', style: em),
               const TextSpan(text: '.'),
             ],
           ),
@@ -186,11 +196,22 @@ class _TutorialContent extends StatelessWidget {
               const TextSpan(text: '\nThe game is not timed, but there is a '),
               TextSpan(text: 'step counter', style: em),
               const TextSpan(
-                text: ' at the top. Solving the puzzle is already an '
-                    'achievement, so reducing steps should only be '
-                    'considered as a bonus objective.',
+                text: ' at the top. Solving the puzzle is already an incredible'
+                    " achievement, so don't be stressed about the steps.",
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 48),
+        ElevatedButton(
+          onPressed: () async {
+            // Wait for the button ink well splash to finish.
+            await Future.delayed(const Duration(milliseconds: 300));
+            onDismiss();
+          },
+          child: const Text("Let's go!"),
+          style: ElevatedButton.styleFrom(
+            primary: const Color(0xbf0d4645),
           ),
         ),
       ],

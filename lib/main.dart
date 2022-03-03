@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'level_transition.dart';
-import 'ui/board_config.dart';
-import 'ui/backdrop_paint.dart';
-import 'ui/puzzle_level.dart';
-import 'ui/tutorial_dialog.dart';
+import 'level_transition/level_end_transition.dart';
+import 'data/board_config.dart';
+import 'backdrop/backdrop_paint.dart';
+import 'puzzle/puzzle_level.dart';
+import 'tutorial/tutorial_dialog.dart';
 
 void main() {
   runApp(const MyApp());

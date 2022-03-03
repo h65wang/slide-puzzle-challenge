@@ -82,7 +82,6 @@ class AnimatedFlipCounter extends StatelessWidget {
     final prototypeDigit = TextPainter(
       text: TextSpan(text: '8', style: style),
       textDirection: TextDirection.ltr,
-      textScaleFactor: MediaQuery.of(context).textScaleFactor,
     )..layout();
 
     // Find the text color (or red as warning). This is so we can avoid using
@@ -136,36 +135,8 @@ class AnimatedFlipCounter extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: mainAxisAlignment,
         children: [
-          if (prefix != null) Text(prefix!),
-          ClipRect(
-            child: TweenAnimationBuilder(
-              // Animate the negative sign (-) appear and disappearing
-              duration: duration,
-              tween: Tween(end: value < 0 ? 1.0 : 0.0),
-              builder: (_, double v, __) => Center(
-                widthFactor: v,
-                child: Text(
-                  '-',
-                  style: TextStyle(color: color.withOpacity(v)),
-                ),
-              ),
-            ),
-          ),
-          // Draw digits before the decimal point
+          if (prefix != null) Text(prefix!, textScaleFactor: 1.0),
           ...integerWidgets,
-          // Draw the decimal point
-          if (fractionDigits != 0) Text(decimalSeparator),
-          // Draw digits after the decimal point
-          for (int i = digits.length - fractionDigits; i < digits.length; i++)
-            _SingleDigitFlipCounter(
-              key: ValueKey('decimal$i'),
-              value: digits[i].toDouble(),
-              duration: duration,
-              curve: curve,
-              size: prototypeDigit.size,
-              color: color,
-            ),
-          if (suffix != null) Text(suffix!),
         ],
       ),
     );
@@ -228,10 +199,14 @@ class _SingleDigitFlipCounter extends StatelessWidget {
     required double opacity,
   }) {
     return Positioned(
+      left: 0,
+      right: 0,
       bottom: offset,
       child: Text(
         '$digit',
+        textScaleFactor: 1.0,
         style: TextStyle(color: color.withOpacity(opacity.clamp(0, 1))),
+        textAlign: TextAlign.center,
       ),
     );
   }

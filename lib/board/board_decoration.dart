@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../game_state.dart';
-import 'board_config.dart';
+import '../data/game_state.dart';
+import '../data/board_config.dart';
 import 'exit_arrows.dart';
 import 'info_display.dart';
 

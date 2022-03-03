@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'board_config.dart';
+import '../data/board_config.dart';
 
 /// Displays 3 down arrows to indicate the exit location.
 class ExitArrows extends StatefulWidget {
