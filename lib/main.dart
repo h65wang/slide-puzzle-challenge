@@ -47,7 +47,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     duration: const Duration(seconds: 2),
   );
 
+  // The current level being played, with 0 being the tutorial.
   int _currentLevel = 0;
+
+  // Whether the user has chosen to hide decorative texts on puzzle pieces.
+  // This is provided as an option in the tutorial dialog, for devices that
+  // do not have necessary fonts installed to correctly display these texts.
+  bool _hideTexts = false;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +63,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       body: BoardConfig(
         unitSize: unitSize,
+        hideTexts: _hideTexts,
         child: Stack(
           children: [
             // Background: a custom painter wrapped in a repaint boundary
@@ -68,7 +75,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             if (_currentLevel == 0)
               TutorialDialog(
-                onDismiss: _advanceToNextLevel,
+                onDismiss: (bool hideTexts) {
+                  setState(() => _hideTexts = hideTexts);
+                  _advanceToNextLevel();
+                },
               ),
             if (_currentLevel > 0)
               Center(

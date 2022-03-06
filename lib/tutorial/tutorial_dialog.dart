@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:slide_puzzle/data/game_state.dart';
@@ -6,10 +7,17 @@ import 'package:slide_puzzle/data/board_config.dart';
 import 'package:slide_puzzle/board/exit_arrows.dart';
 import 'package:slide_puzzle/puzzle/puzzle_piece.dart';
 
-class TutorialDialog extends StatelessWidget {
-  final VoidCallback onDismiss;
+class TutorialDialog extends StatefulWidget {
+  final void Function(bool hideText) onDismiss;
 
   const TutorialDialog({Key? key, required this.onDismiss}) : super(key: key);
+
+  @override
+  State<TutorialDialog> createState() => _TutorialDialogState();
+}
+
+class _TutorialDialogState extends State<TutorialDialog> {
+  bool _hideTexts = false;
 
   @override
   Widget build(BuildContext context) {
@@ -20,17 +28,19 @@ class TutorialDialog extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
-              child: _TutorialContent(onDismiss: onDismiss),
+              child: _buildTutorialContent(context),
             ),
           ),
         ),
         Positioned(
-          top: 24,
-          right: 24,
+          top: 16,
+          right: 16,
           child: ClipOval(
             child: Material(
               shape: const CircleBorder(),
-              child: CloseButton(onPressed: onDismiss),
+              child: CloseButton(
+                onPressed: () => widget.onDismiss(_hideTexts),
+              ),
             ),
           ),
         ),
@@ -65,20 +75,13 @@ class TutorialDialog extends StatelessWidget {
       // instead of quitting the entire app.
       child: responsiveDialog,
       onWillPop: () async {
-        onDismiss();
+        widget.onDismiss(_hideTexts);
         return false;
       },
     );
   }
-}
 
-class _TutorialContent extends StatelessWidget {
-  final VoidCallback onDismiss;
-
-  const _TutorialContent({Key? key, required this.onDismiss}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildTutorialContent(BuildContext context) {
     final header = TextStyle(
       fontWeight: FontWeight.bold,
       color: BoardConfig.of(context).pieceColor2,
@@ -163,6 +166,7 @@ class _TutorialContent extends StatelessWidget {
             Text('Blockers', style: em),
           ],
         ),
+        _buildHideTextOption(context),
         RichText(
           text: TextSpan(
             style: body,
@@ -207,7 +211,7 @@ class _TutorialContent extends StatelessWidget {
           onPressed: () async {
             // Wait for the button ink well splash to finish.
             await Future.delayed(const Duration(milliseconds: 300));
-            onDismiss();
+            widget.onDismiss(_hideTexts);
           },
           child: const Text("Let's go!"),
           style: ElevatedButton.styleFrom(
@@ -218,12 +222,13 @@ class _TutorialContent extends StatelessWidget {
     );
   }
 
-  _buildPuzzlePiece(Piece piece) {
+  Widget _buildPuzzlePiece(Piece piece) {
     return IgnorePointer(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: BoardConfig(
           unitSize: 30,
+          hideTexts: _hideTexts,
           child: Stack(
             children: [
               PuzzlePieceShadow(piece: piece),
@@ -232,6 +237,36 @@ class _TutorialContent extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHideTextOption(BuildContext context) {
+    const body = TextStyle(
+      fontWeight: FontWeight.normal,
+      color: Colors.black87,
+      height: 1.2,
+    );
+    final em = TextStyle(
+      fontWeight: FontWeight.bold,
+      color: BoardConfig.of(context).corePieceColor2,
+      height: 1.2,
+    );
+
+    return RichText(
+      text: TextSpan(
+        style: body,
+        children: [
+          const TextSpan(text: '\nYou can '),
+          TextSpan(
+            text: 'click here',
+            style: em,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => setState(() => _hideTexts = !_hideTexts),
+          ),
+          TextSpan(text: ' to ${_hideTexts ? 'show' : 'hide'} '),
+          const TextSpan(text: 'decorative texts on the pieces.'),
+        ],
       ),
     );
   }

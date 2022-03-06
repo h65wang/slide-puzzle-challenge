@@ -7,6 +7,10 @@ class BoardConfig extends InheritedWidget {
   /// The width and height of a 1x1 piece.
   final double unitSize;
 
+  /// Whether to hide decorative Chinese characters on pieces.
+  /// This is useful for devices without necessary fonts installed.
+  final bool hideTexts;
+
   /// Colors used for the core piece.
   final Color corePieceColor1 = const Color(0xff359090);
   final Color corePieceColor2 = const Color(0xff1f7878);
@@ -22,6 +26,7 @@ class BoardConfig extends InheritedWidget {
     Key? key,
     required this.unitSize,
     required Widget child,
+    this.hideTexts = false,
   }) : super(key: key, child: child);
 
   static BoardConfig of(BuildContext context) {

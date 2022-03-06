@@ -27,6 +27,10 @@ class _ShinyTextState extends State<ShinyText>
 
   @override
   Widget build(BuildContext context) {
+    if (BoardConfig.of(context).hideTexts) {
+      return const SizedBox();
+    }
+
     final fontSize = BoardConfig.of(context).unitSize * 0.4;
     final size = MediaQuery.of(context).size;
     return AnimatedBuilder(
