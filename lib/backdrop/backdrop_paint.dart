@@ -87,60 +87,71 @@ class _FallingDotsPainter extends CustomPainter {
 
 /// A vertical line of falling dots, similar to a moving snake in a snake game.
 class _Snake {
-  static const dotSize = 20.0;
+  static const gridSize = 20.0;
   final Random rnd;
   final int index; // the column index of this snake on screen
 
   late int length; // the total length of the snake
   late double sizeVariance; // the size factor of each snake dot
-  late bool colorful; // it's colorful when first loaded, green otherwise
+  late bool colorful; // it's colorful when celebrating, green otherwise
   late double speed;
   late double y;
 
   _Snake(this.index) : rnd = Random() {
     reset();
-    // get some random starting positions to make the first frame look natural
+    // Get some random starting positions to make the first frame look natural.
     y = _rndBetween(-200, 100);
   }
 
   /// When a snake reaches the bottom, it's reset to the top with new stats.
   reset() {
-    length = _rndBetween(10, 20).toInt();
-    sizeVariance = _rndBetween(0.3, 0.5);
-    colorful = false;
-    speed = _rndBetween(0.05, 0.5);
-    y = 0;
+    length = _rndBetween(10, 20).toInt(); // the length of the snake
+    sizeVariance = _rndBetween(0.2, 0.6); // the size of each dot
+    colorful = false; // the snake is usually all green and not colorful
+    // Speed is related to snake size. Smaller snakes seem farther away from
+    // the camera, so we make them move slower, to create a parallax effect.
+    speed = sizeVariance * 0.8;
+    // Leave some space at the top, so they aren't instantly visible.
+    y = _rndBetween(-50, -10);
   }
 
-  /// A special reset to create longer, faster, and colorful snakes.
+  /// A special reset to create longer, faster, and more colorful snakes.
   celebrate() {
     reset();
-    length = _rndBetween(20, 80).toInt();
+    length *= 3;
+    speed *= 4;
     colorful = true;
-    speed = _rndBetween(1.0, 2.0);
   }
 
+  Size get dotSize => Size(gridSize * sizeVariance, gridSize * sizeVariance);
+
+  /// Moves the snake forward. This calculation is always performed even if the
+  /// snake is currently off-screen. This is because the user might resize the
+  /// window any time, and a previously visible snake might become invisible
+  /// and then visible again, we don't want to lose state when that happens.
   tick(double screenHeight) {
-    if ((y - (length * 2)) * dotSize > screenHeight) {
-      // this snake has been off-screen for a while, reset it
+    if ((y - length) * gridSize > screenHeight) {
+      // the tail of the snake is off-screen, reset it
       reset();
     }
     y += speed;
   }
 
   paint(Canvas canvas, Size size) {
-    if (index * dotSize > size.width) {
+    final left = index * gridSize;
+    if (left > size.width || y < 0) {
       // this snake is entirely off-screen, skip painting
       return;
     }
 
     for (int i = 0; i < length; i++) {
+      final top = (y - i).floor() * gridSize;
+      if (top > size.height) {
+        // this dot is off-screen, skip painting
+        continue;
+      }
       canvas.drawRect(
-        Offset(index * dotSize, (y - i).floor() * dotSize) &
-            Size(
-              dotSize * sizeVariance,
-              dotSize * sizeVariance,
-            ),
+        Offset(left, top) & dotSize,
         Paint()..color = _getColor(i),
       );
     }
