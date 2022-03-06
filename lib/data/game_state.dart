@@ -10,9 +10,9 @@ class GameState {
 
   ValueNotifier<int> stepCounter = ValueNotifier(0); // total steps used
 
-  GameState.level(this.level) : boardSize = const Coordinates(4, 5) {
-    reset();
-  }
+  GameState.level(this.level)
+      : boardSize = const Coordinates(4, 5),
+        pieces = LevelData.load(level);
 
   /// Returns whether a piece can be legally moved towards dx dy.
   ///
@@ -60,17 +60,7 @@ class GameState {
   /// counter to 0 (this triggers value notifier).
   void reset() {
     stepCounter.value = 0;
-    switch (level) {
-      case 1:
-        pieces = LevelData.level1();
-        break;
-      case 2:
-        pieces = LevelData.level2();
-        break;
-      default:
-        pieces = LevelData.level3();
-        break;
-    }
+    pieces = LevelData.load(level);
   }
 }
 
