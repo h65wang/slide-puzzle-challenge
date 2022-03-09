@@ -1,10 +1,18 @@
 # Slide Puzzle: Escape of Cao Cao
 
-This is a puzzle game made on live-stream with Flutter, demonstrating various animation techniques
+This is a puzzle game made on live-stream, demonstrating various animation techniques in Flutter,
 and targeting mobile, desktop, and the web from a single code base.
 
-The goal of the game is to move "the biggest puzzle piece (Cao Cao)" to the "exit" at the bottom, in
+The goal of the game is to move "the biggest puzzle piece (Cao Cao)" to "the exit" at the bottom, in
 as few steps as possible.
+
+## Web Demo
+
+[![web demo](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/web-demo.gif)](
+https://d1qjxjz3vso8bm.cloudfront.net/)
+
+[A playable web version is available](https://d1qjxjz3vso8bm.cloudfront.net/). For the best
+experience, you can also try out native desktop or mobile apps.
 
 ## Release Notes
 
@@ -12,7 +20,8 @@ as few steps as possible.
 
 - Added more levels.
 - Added a new 3D animation during level transitions.
-- Various UI and UX improvements.
+- Added an option to hide decorative texts on puzzle pieces.
+- Various minor UI enhancements and performance improvements.
 
 #### v1.1.0
 
@@ -23,7 +32,84 @@ as few steps as possible.
 
 - Initial release for all platforms.
 
-## Multi-platform
+## Video Overview
+
+A short video (less than 3 min) is available, providing a brief overview of v1.0.0.
+
+[![video](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-cover.jpg)](
+https://www.youtube.com/watch?v=VFiejrt7uTk)
+
+You can choose to watch the video in [English](https://www.youtube.com/watch?v=VFiejrt7uTk)
+| [Chinese](https://www.bilibili.com/video/BV1y44y1n73G).
+
+At a high level, the app can be divided into 3 parts: the background layer, the game board, and the
+puzzle pieces. Each puzzle piece also comes with a pair of interlocking attachments and a shadow for
+some added depth. These components are stacked as 3 different layers, to make sure they always
+appear in the correct order when being moved.
+
+<img alt="each puzzle piece needs to be layered 3 times" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-layering.png" />
+
+The color palette is configured as an `InheritedWidget` so its values can be modified in one place,
+and easily accessed elsewhere in the widget tree.
+
+The puzzle pieces are made from `AnimatedPositioned`. For the duration, I pass in zero if the window
+size is different from before. This is to skip the unwanted animation when the app is being resized.
+And for the curve, I use `EaseOut` to slow them down naturally.
+
+To handle user input, I added `GestureDetector`. I used the `onPanUpdate` event instead of
+the `onPanEnd` event, to reduce input lag.
+
+<img alt="use onPanUpdate for a faster response" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-gesture.png" />
+
+From the picture above you can see that the user has not finished the action (finger is still
+touching the screen), but with `onPanUpdate` event, the game has already responded.
+
+For the reset button, I added a `MouseRegion` widget to make it glow when being hovered.
+
+<img alt="use MouseRegion to make the reset button glow" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-mouse.gif" />
+
+The step counter on the side is another example of utilizing implicit animations in Flutter. It’s
+also wrapped in a `ValueListenableBuilder`, so it can always keep up with the steps.
+
+<img alt="an animated flip counter used to track steps" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-counter.gif" />
+
+I’ve [published the counter as a package](https://pub.dev/packages/animated_flip_counter) on `pub`
+and made a [video](https://www.bilibili.com/video/BV163411q7Yw) explaining how it was made. If you
+like this animation, you can import it to your own project.
+
+The game board is mostly a `Container` with some decorations and clipping. I also used
+a `BackdropFilter` here to blur everything behind it, and a `ShaderMask` to create a beam effect.
+
+<img alt="BackdropFilter and ShaderMask" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-blur.png" />
+
+The beam created by `ShaderMask` is an explicit animation with its controller set to repeat, so it
+can keep dancing around in the game.
+
+<img alt="glare on texts" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-shiny.gif" />
+
+Similarly, the decorative texts puzzle pieces are also animated to have a glare effect.
+
+Lastly, I used a `CustomPaint` for the app background. It efficiently draws colorful rectangles
+every frame and runs well even on low-end devices.
+
+## Initial Release
+
+### Live Coding
+
+The initial version of the app was created as "live coding" stream sessions. With discussions and
+voting polls on design choices such as the color palette, together we built the game in 12
+live-stream sessions.
+
+<img alt="live-stream: a screenshot of a live coding session" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/live-stream.jpg" />
+
+### Multi-platform
 
 The project is made with Flutter and runs on multiple platforms including Windows, macOS, Linux,
 Android, iOS, and the web.
@@ -31,42 +117,42 @@ Android, iOS, and the web.
 <img alt="multi-platform: a photo of the app running on multiple devices" width="200"
 src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/multi-platform.jpg" />
 
-When building for web, make sure to use `canvaskit` renderer for better experience on mobile
-browsers. You can do so with `flutter build web --web-renderer canvaskit` command.
+When building for web, make sure to use `canvaskit` renderer for better experience across devices.
+You can do so with `flutter build web --web-renderer canvaskit` command. Otherwise, the puzzle might
+not render correctly on mobile browsers. I've
+created [an issue](https://github.com/flutter/flutter/issues/99045) for this and looks like the
+Flutter team is [already on it](https://github.com/flutter/engine/pull/31887).
 
-## How It's Made
+### Version History
 
-#### Live Stream
+In the [commit log](https://github.com/h65wang/slide-puzzle-challenge/commits/master), *Initial
+commit* refers to "counter" template that comes with new Flutter projects, and *the 12 commits after
+that* correspond to each of the live stream sessions, ranging from Jan. 26 to Feb. 14, 2022.
 
-<img alt="live-stream: a screenshot of a live coding session" width="200"
-src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/live-stream.jpg" />
+After the project was completed on live stream, I spent a week working on the video. A few small
+commits were made as well, enabling desktop support, fixing minor issues, and updating the README
+file. The initial version was released on Feb. 22, and
+the [short video](https://www.youtube.com/watch?v=VFiejrt7uTk) explaining the project was published
+on the same day.
 
-The creation of the entire project was streamed live. With viewers discussing and voting on things
-like color choices, together, the initial version was built in 12 live-stream sessions.
+## Updates
 
-#### Commit History
+A few more improvements were made after the initial release. These improvements are not done on live
+streams and are not covered in the 3-minute video, so I'll briefly summarize them here.
 
-The "Initial commit" contains the famous "Flutter counter" demo that comes with new Flutter
-projects, and 12 subsequent commits correspond to each of the live stream sessions, ranging from
-Jan. 26 to Feb. 14, 2022.
-
-After the project is completed on live stream, I then made a few more commits enabling desktop
-support, fixing minor issues and updating the README file. The initial version was released on Feb.
-22, and a [short video (less than 3 min)](https://www.youtube.com/watch?v=VFiejrt7uTk) explaining
-the project was published on the same day.
-
-#### Further Updates
-
-A few more improvements were made after the initial release. These improvements are not covered in
-the video, so I'll briefly summarize them here.
-
-##### New Tutorial Dialog
+### New Tutorial Dialog
 
 A new "How to Play" screen was added to the game. It's a responsive dialog made with `LayoutBuilder`
 and `ConstrainedBox`, and decorated by `CupertinoPopupSurface`. It also used a
 `WillPopScope` to allow users to dismiss the dialog with the back button on Android devices.
 
-##### New End-Level Transition
+<img alt="new tutorial dialog with an option to hide decorative texts" width="200"
+src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/tutorial-hide.gif" />
+
+During testing, I noticed some older devices might not have international fonts installed, so I
+added an option to hide the decorative texts in case they don't render properly.
+
+### New 3D Animation
 
 This is my first time trying to simulate 3D objects without any 3rd party tools or plugins in
 Flutter. It's made using `Transform` widgets to translate and rotate 6 rectangles to correct places
@@ -77,57 +163,20 @@ development process.
 src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/cube-3d.gif" />
 
 Further optimizations were made so only up to 3 faces (visible to the viewers) are rendered at a
-time. This formed the basis for a new transition animation when a level is completed.
+time, and a glare effect was added using `LinearGradient`. This formed the basis for a new
+transition animation when a level is completed.
 
 <img alt="a 3d cube made in flutter" width="200"
 src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/cao-3d.gif" />
 
-## Web Demo
+I've published a **video tutorial** on this topic, watch it
+in [English](https://www.youtube.com/watch?v=hDmWOsOU_Ko)
+| [Chinese](https://www.bilibili.com/video/BV1Qb4y1W7dS).
 
-[![web demo](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/web-demo.jpg)](
-https://d1qjxjz3vso8bm.cloudfront.net/)
+### New Levels
 
-[A playable web version is available](https://d1qjxjz3vso8bm.cloudfront.net/). For the best
-experience, please use a desktop browser, or install the mobile app.
-
-## Video Overview
-
-Watch the Video in [English](https://www.youtube.com/watch?v=VFiejrt7uTk)
-| [Chinese](https://www.bilibili.com/video/BV1y44y1n73G).
-
-[![video](https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/video-thumbnail.jpg)](
-https://www.youtube.com/watch?v=VFiejrt7uTk)
-
-At a high level, the app can be divided into 3 parts: the background layer, the game board, and the
-puzzle pieces. Each puzzle piece also comes with a pair of interlocking attachments and a shadow for
-some added depth. They are then stacked as different layers, to make sure they always appear in the
-correct order. The color palette is configured as an `InheritedWidget` so its values can be modified
-in one place, and easily accessed elsewhere in the widget tree.
-
-The puzzle pieces are made from `AnimatedPositioned`. In Flutter, implicit animation widgets like
-these are super easy to use - just give them a duration and an optional curve, and they’ll
-automatically animate when their values are changed. For the duration, I first check if the window
-size is different from before, and if so, I pass in zero. This is to skip the unwanted animation
-when the app is being resized. And for the curve, I use `EaseOut` to simulate physical objects being
-slowed down by friction.
-
-To handle user input, I added `GestureDetector`. I used the `onUpdate` event instead of the `onEnd`
-event here. This reduces input lag, allowing the game to react before the gesture ends. For the
-reset button, I also added a `MouseRegion` widget to make it glow when being hovered.
-
-The step counter is another example of utilizing implicit animations in Flutter. It’s also wrapped
-in a `ValueListenableBuilder`, so it can always keep up with the steps. I’ve published this widget
-as a package on `pub` and made a video explaining how it was made. If you like this animation, you
-can import it to your own project.
-
-The game board is mostly a `Container`. I used a `BackdropFilter` to blur everything behind it, and
-a `ShaderMask` to create a beam effect. Since we want the beam to keep dancing around, it’s easier
-to use explicit animations with a controller. Also, the exit arrows at the bottom, and the
-highlighting effect on texts, are all made with Flutter’s explicit animations.
-
-Lastly, I used a `CustomPaint` for the background. A text-painting version was first implemented but
-later scrapped because having to layout texts every frame caused some performance issues on the web.
-The simplified version looks similar but performs much better, even on low-end devices.
+A few more levels have been added to the game since the initial version was done on live-stream. As
+of version 1.2.0 there are a total of 7 levels in the game, ranging from trivial to very difficult.
 
 ## What's Next
 
@@ -135,8 +184,9 @@ The simplified version looks similar but performs much better, even on low-end d
 - [x] Add a tutorial screen to explain the game
 - [x] Add more levels to the game
 - [ ] Allow users to select levels
+- [ ] Add an automatic solver or hint system
 - [ ] Add keyboard support
-- [ ] Improve swiping gesture
+- [ ] Further improve swiping gestures
 
 # Extra Resources
 
