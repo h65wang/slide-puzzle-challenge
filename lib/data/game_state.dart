@@ -10,9 +10,23 @@ class GameState {
 
   ValueNotifier<int> stepCounter = ValueNotifier(0); // total steps used
 
+  GameState({
+    required this.level,
+    required this.boardSize,
+    required this.pieces,
+  });
+
   GameState.level(this.level)
       : boardSize = const Coordinates(4, 5),
         pieces = LevelData.load(level);
+
+  GameState copyWith({List<Piece>? pieces}) {
+    return GameState(
+      level: level,
+      boardSize: boardSize,
+      pieces: pieces ?? this.pieces,
+    );
+  }
 
   /// Returns whether a piece can be legally moved towards dx dy.
   ///
@@ -83,6 +97,24 @@ class Piece {
     required y,
   }) : coordinates = ValueNotifier(Coordinates(x, y));
 
+  Piece.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        label = json['label'],
+        width = json['width'],
+        height = json['height'],
+        coordinates = ValueNotifier(Coordinates(json['x'], json['y']));
+
+  Piece copyWith({int? x, int? y}) {
+    return Piece(
+      id,
+      label: label,
+      width: width,
+      height: height,
+      x: x ?? this.x,
+      y: y ?? this.y,
+    );
+  }
+
   /// Moves the current piece towards dx dy, regardless if it's legal.
   void move(int dx, int dy) => coordinates.value = Coordinates(x + dx, y + dy);
 
@@ -96,6 +128,15 @@ class Piece {
         for (int j = 0; j < height; j++) Coordinates(x + i, y + j),
     ];
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'width': width,
+        'height': height,
+        'x': x,
+        'y': y,
+      };
 }
 
 /// The (x, y) coordinates, typically used to represent [Piece] position.

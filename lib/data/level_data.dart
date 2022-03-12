@@ -4,10 +4,10 @@ class LevelData {
   /// Test Level: used for testing UI, cannot win
   static testLevel() => [
         Piece(0, label: '曹操', width: 2, height: 2, x: 2, y: 0),
-        Piece(1, label: '黄\n忠', width: 1, height: 4, x: 0, y: 0),
-        Piece(2, label: '关羽', width: 3, height: 1, x: 1, y: 3),
-        Piece(3, label: '秋', width: 1, height: 1, x: 0, y: 4),
-        Piece(4, label: '冬', width: 1, height: 1, x: 3, y: 4),
+        Piece(1, label: '关羽', width: 3, height: 1, x: 1, y: 3),
+        Piece(2, label: '黄\n忠', width: 1, height: 4, x: 0, y: 0),
+        Piece(6, label: '秋', width: 1, height: 1, x: 0, y: 4),
+        Piece(7, label: '冬', width: 1, height: 1, x: 3, y: 4),
       ];
 
   /// Level 1: a trivial level that can be solved in 3 moves
