@@ -38,7 +38,12 @@ class LevelEndTransition extends AnimatedWidget {
             ..rotateX(angle.value) // fall down
             ..scale(1.0 - animation.value), // fly away
           alignment: Alignment.center,
-          child: child,
+          child: IgnorePointer(
+            // Prevents user interaction while animating.
+            // The puzzle has been solved, don't un-solve it!
+            ignoring: animation.value > 0,
+            child: child,
+          ),
         ),
         if (animation.value > 0)
           Positioned(

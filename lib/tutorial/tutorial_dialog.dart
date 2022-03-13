@@ -233,7 +233,7 @@ class _TutorialDialogState extends State<TutorialDialog> {
             children: [
               PuzzlePieceShadow(piece: piece),
               PuzzlePieceAttachment(piece: piece),
-              PuzzlePiece(piece: piece, gameState: GameState.level(0)),
+              PuzzlePiece(piece: piece, disableGestures: true),
             ],
           ),
         ),

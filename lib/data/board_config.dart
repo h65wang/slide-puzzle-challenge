@@ -22,7 +22,12 @@ class BoardConfig extends InheritedWidget {
   final Color pieceAttachmentColor = const Color(0xff0b4040);
   final Color pieceShadowColor = const Color(0xff0f2424);
 
-  const BoardConfig({
+  /// A series of LayerLink objects that correspond to each puzzle piece.
+  /// This is used by the "hint" animation to insert an overlay exactly on top
+  /// of the piece that's hinted to move.
+  final List<LayerLink> layerLinks = List.generate(10, (int i) => LayerLink());
+
+  BoardConfig({
     Key? key,
     required this.unitSize,
     required Widget child,

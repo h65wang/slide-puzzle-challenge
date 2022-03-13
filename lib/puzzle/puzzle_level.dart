@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../hint/hint.dart';
 import '../data/game_state.dart';
 import '../board/board_decoration.dart';
 import '../data/board_config.dart';
@@ -21,6 +24,8 @@ class _PuzzleLevelState extends State<PuzzleLevel>
     with SingleTickerProviderStateMixin {
   late final GameState _gameState = GameState.level(widget.level);
 
+  Timer? _hintTimer;
+
   @override
   initState() {
     super.initState();
@@ -29,7 +34,21 @@ class _PuzzleLevelState extends State<PuzzleLevel>
         // The user pressed the reset button.
         setState(() {});
       }
+      _hintTimer?.cancel();
     });
+
+    // Show a hint on the first level if the user has not moved yet.
+    if (widget.level == 1) {
+      _hintTimer ??= Timer.periodic(const Duration(seconds: 2), (_) {
+        Hint.show(context, _gameState);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _hintTimer?.cancel();
   }
 
   @override
@@ -62,10 +81,13 @@ class _PuzzleLevelState extends State<PuzzleLevel>
         for (final p in _gameState.pieces)
           _AnimatedPieceComponent(
             piece: p,
-            child: PuzzlePiece(
-              piece: p,
-              gameState: _gameState,
-              onMove: _onMove,
+            child: CompositedTransformTarget(
+              link: BoardConfig.of(context).layerLinks[p.id],
+              child: PuzzlePiece(
+                piece: p,
+                gameState: _gameState,
+                onMove: _onMove,
+              ),
             ),
           ),
       ],

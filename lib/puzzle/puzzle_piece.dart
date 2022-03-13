@@ -6,20 +6,24 @@ import 'shiny_text.dart';
 
 /// A UI representation of the [Piece] data object on the screen.
 ///
-/// Each piece also comes with a "shadow" piece called [PuzzlePieceShadow] and
-/// a few "attachments" called [PuzzlePieceAttachment] on the side, to make it
-/// look more realistic when interacting with other pieces.
+/// Each piece should also come with a [PuzzlePieceShadow] and a couple
+/// [PuzzlePieceAttachment] on the side, to make it look more realistic when
+/// interacting with other pieces.
 class PuzzlePiece extends StatefulWidget {
   final Piece piece;
-  final GameState gameState;
+  final bool disableGestures; // whether to wrap the piece in a GestureDetector
+  final GameState? gameState;
   final VoidCallback? onMove;
 
   const PuzzlePiece({
     Key? key,
     required this.piece,
-    required this.gameState,
+    this.disableGestures = false,
+    this.gameState,
     this.onMove,
-  }) : super(key: key);
+  })  : assert(gameState != null || disableGestures,
+            'Must pass in game state to enable moving.'),
+        super(key: key);
 
   @override
   State<PuzzlePiece> createState() => _PuzzlePieceState();
@@ -54,6 +58,10 @@ class _PuzzlePieceState extends State<PuzzlePiece> {
       child: Center(child: ShinyText(label: widget.piece.label)),
     );
 
+    if (widget.disableGestures) {
+      return child;
+    }
+
     return GestureDetector(
       onPanStart: (DragStartDetails details) {
         _dispatched = false;
@@ -65,7 +73,7 @@ class _PuzzlePieceState extends State<PuzzlePiece> {
         final direction = _getDirection(delta, 5);
         if (direction == null) return;
         // Check if the user input is a legal move
-        if (widget.gameState.canMove(widget.piece, direction.x, direction.y)) {
+        if (widget.gameState!.canMove(widget.piece, direction.x, direction.y)) {
           // move the piece (this triggers a value notifier)
           widget.piece.move(direction.x, direction.y);
           // fire the callback

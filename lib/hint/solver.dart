@@ -72,20 +72,32 @@ class Solver {
   /// This means, a 2x1 piece is treated the same as another 2x1 piece, even
   /// if their display texts are different.
   static String _snapshot(GameState state) {
+    // int s = 0;
+    // for (int i = 0; i < 5; i++) {
+    //   for (int j = 0; j < 4; j++) {
+    //     // We use ~/ 10 to get the piece type of the cell. Possible values are
+    //     // 0 (empty cell) and 1-4 (four different kinds of pieces).
+    //     // Since 4 is '100' in binary, we can left-shift the sum by as little
+    //     // as 3 bits (multiply by 8). This prevents integer overflow.
+    //     s = s * 8 + (cells[i][j] ~/ 10);
+    //   }
+    // }
+    // // Surprisingly, HashSet<String> is faster than HashSet<int> in Dart.
+    // // See question: https://stackoverflow.com/questions/71443337
+    // return '$s';
+
+    // The approach above runs faster but when compiled for flutter web,
+    // the js integer won't be big enough to hold the sum, so we use a
+    // string-based solution for better cross-platform compatibility.
     final List<List<int>> cells = _project(state.pieces);
-    int s = 0;
+    List<String> s = [];
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 4; j++) {
-        // We use ~/ 10 to get the piece type of the cell. Possible values are
-        // 0 (empty cell) and 1-4 (four different kinds of pieces).
-        // Since 4 is '100' in binary, we can left-shift the sum by as little
-        // as 3 bits (multiply by 8). This prevents integer overflow.
-        s = s * 8 + (cells[i][j] ~/ 10);
+        final type = cells[i][j] ~/ 10;
+        s.add('$type');
       }
     }
-    // Surprisingly, HashSet<String> is faster than HashSet<int> in Dart.
-    // See question: https://stackoverflow.com/questions/71443337
-    return '$s';
+    return s.join();
   }
 
   /// Projects pieces onto the board, and returns a 5x4 array representing
