@@ -6,6 +6,7 @@ import 'package:slide_puzzle/data/game_state.dart';
 import 'package:slide_puzzle/data/board_config.dart';
 import 'package:slide_puzzle/board/exit_arrows.dart';
 import 'package:slide_puzzle/puzzle/puzzle_piece.dart';
+import 'package:slide_puzzle/tutorial/tutorial_transition.dart';
 
 class TutorialDialog extends StatefulWidget {
   final void Function(bool hideText) onDismiss;
@@ -13,10 +14,41 @@ class TutorialDialog extends StatefulWidget {
   const TutorialDialog({Key? key, required this.onDismiss}) : super(key: key);
 
   @override
-  State<TutorialDialog> createState() => _TutorialDialogState();
+  _TutorialDialogState createState() => _TutorialDialogState();
 }
 
-class _TutorialDialogState extends State<TutorialDialog> {
+class _TutorialDialogState extends State<TutorialDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  )..forward();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TutorialTransition(
+      animation: _controller,
+      child: _Dialog(widget.onDismiss),
+    );
+  }
+}
+
+class _Dialog extends StatefulWidget {
+  final void Function(bool hideText) onDismiss;
+
+  const _Dialog(this.onDismiss, {Key? key}) : super(key: key);
+
+  @override
+  State<_Dialog> createState() => _DialogState();
+}
+
+class _DialogState extends State<_Dialog> {
   bool _hideTexts = false;
 
   @override

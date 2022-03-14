@@ -104,14 +104,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _advanceToNextLevel() {
     _levelBeginController.forward(from: 0.0);
-    _backdropController.celebrate();
     setState(() => _currentLevel++);
   }
 
   void _onLevelCompleted(int level, int steps) async {
+    // Make the background colorful.
+    _backdropController.celebrate();
     // Play animation: game board falling down and 3D piece spinning.
     await _levelEndController.forward();
-    // Embrace the void: pause and find peace in the emptiness.
+    // Take a short break at the empty screen.
     await Future.delayed(const Duration(milliseconds: 300));
     // Reset the animation controller for the next time.
     _levelEndController.reset();

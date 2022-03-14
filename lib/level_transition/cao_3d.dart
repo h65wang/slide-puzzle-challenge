@@ -10,6 +10,7 @@ import 'level_end_transition.dart';
 class Cao3D extends StatelessWidget {
   final double width, height, depth;
   final double rotateX, rotateY;
+  final String label;
 
   const Cao3D({
     Key? key,
@@ -18,6 +19,7 @@ class Cao3D extends StatelessWidget {
     required this.depth,
     this.rotateX = 0.0,
     rotateY = 0.0,
+    this.label = '曹操',
   })  : rotateY = rotateY % (pi * 2),
         assert(
             rotateX <= 1.2 && rotateX >= -1.2,
@@ -48,7 +50,7 @@ class Cao3D extends StatelessWidget {
             stops: [0.0, 0.0 + beam, 0.2 + beam, 0.4 + beam, 1.0],
           ),
         ),
-        child: const Center(child: ShinyText(label: '曹操')),
+        child: Center(child: ShinyText(label: label)),
       ),
     );
 
