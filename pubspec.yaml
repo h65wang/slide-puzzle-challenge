@@ -2,7 +2,7 @@ name: slide_puzzle
 description: A sliding puzzle game demonstrating various animation techniques in Flutter.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.2.0+1
+version: 1.2.1+5
 
 environment:
   sdk: ">=2.15.1 <3.0.0"

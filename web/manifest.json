@@ -1,11 +1,11 @@
 {
-    "name": "slide_puzzle",
-    "short_name": "slide_puzzle",
+    "name": "Slide Puzzle: Escape of Cao Cao",
+    "short_name": "Slide Puzzle",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#000000",
+    "theme_color": "#1f7878",
+    "description": "A puzzle game demonstrating various animation techniques in Flutter.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

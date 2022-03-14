@@ -10,9 +10,18 @@ as few steps as possible.
 [A playable web version is available](https://d1qjxjz3vso8bm.cloudfront.net/). For the best
 experience, you can also try out native desktop or mobile apps.
 
-## Version History
+## Releases
 
-### v1.2.0 (2020-03-12)
+### v1.2.1 (2022-03-14)
+
+- Added an animation when the game launches.
+
+<center>
+    <img alt="an intro animation when the game starts" width="200"
+    src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/intro-animation.gif" />
+</center>
+
+### v1.2.0 (2022-03-12)
 
 - Added a hint button.
 - Minor changes to the reset button.
@@ -27,7 +36,7 @@ in the pieces.
     src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/hint.gif" />
 </center>
 
-### v1.1.0 (2020-03-06)
+### v1.1.0 (2022-03-06)
 
 - Added more levels.
 - Added a new 3D animation during level transitions.
@@ -56,7 +65,7 @@ I've published a **video tutorial** on this topic, watch it
 in [English](https://www.youtube.com/watch?v=hDmWOsOU_Ko)
 | [Chinese](https://www.bilibili.com/video/BV1Qb4y1W7dS).
 
-### v1.0.1 (2020-02-26)
+### v1.0.1 (2022-02-26)
 
 - Added a simple tutorial screen.
 - Fixed a bug where the web version was not rendering correctly on mobile browsers.
@@ -70,8 +79,8 @@ dismiss it with the back button.
     src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/tutorial-hide.gif" />
 </center>
 
-It provides an option to hide decorative texts in case they don't render properly, e.g. when there
-are no international fonts installed.
+It provides an option to hide decorative texts (v1.1.0) in case they don't render properly, e.g.
+when there are no international fonts installed.
 
 When building for web, make sure to use `canvaskit` renderer for better experience across devices.
 You can do so with `flutter build web --web-renderer canvaskit` command. Otherwise, the puzzle might
@@ -79,7 +88,7 @@ not render correctly on mobile browsers. I've
 created [an issue](https://github.com/flutter/flutter/issues/99045) for this and looks like the
 Flutter team is [already on it](https://github.com/flutter/engine/pull/31887).
 
-### v1.0.0 (2020-02-22)
+### v1.0.0 (2022-02-22)
 
 - Initial release for all platforms.
 
@@ -99,8 +108,8 @@ The support for more platforms were added after the live stream ended.
     src="https://flutter-challenge.s3.us-west-2.amazonaws.com/hosting/multi-platform.jpg" />
 </center>
 
-The video overview (see below) was released at the same time as this initial version, so new
-features and changes are not included in the video.
+The video overview (see below) was released at the same time as the initial version, so new features
+mentioned above are not included in the video.
 
 ## Video Overview
 
@@ -187,7 +196,6 @@ every frame and runs well even on low-end devices.
 - [x] Add more levels to the game
 - [x] Add an automatic solver or a hint system
 - [ ] Allow users to select levels
-- [ ] Design an app icon
 - [ ] Add keyboard support
 - [ ] Further improve swiping gestures
 
